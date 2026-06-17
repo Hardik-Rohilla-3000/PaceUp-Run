@@ -474,7 +474,7 @@ export default function Home() {
                   <div className="text-xs text-slate-400">Your Route, Your Time</div>
                 </div>
                 <div className="p-4 rounded-xl bg-white/5 border border-white/5 text-center">
-                  <Trophy className="h-6 w-6 text-accent-gold mx-auto mb-2 animate-bounce" />
+                  <Trophy className="h-6 w-6 text-accent-gold mx-auto mb-2" />
                   <div className="font-display font-bold text-2xl text-white">Premium Trophy</div>
                   <div className="text-xs text-slate-400">Delivered to finishers</div>
                 </div>
@@ -484,7 +484,7 @@ export default function Home() {
                   <div className="text-xs text-slate-400">Track Anywhere</div>
                 </div>
                 <div className="p-4 rounded-xl bg-white/5 border border-white/5 text-center">
-                  <DollarSign className="h-6 w-6 text-yellow-400 mx-auto mb-2" />
+                  <span className="block text-2xl text-yellow-400 mx-auto mb-2 leading-none">₹</span>
                   <div className="font-display font-bold text-2xl text-white">₹399</div>
                   <div className="text-xs text-slate-400">All-Inclusive</div>
                 </div>
