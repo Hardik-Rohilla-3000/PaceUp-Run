@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@variant dark (&:is(.dark, .dark *));
+
 @theme {
   --color-primary-dark: #040D1D;
   --color-primary-navy: #081B3A;

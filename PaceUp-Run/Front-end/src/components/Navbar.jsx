@@ -175,21 +175,18 @@ export default function Navbar({ darkMode, setDarkMode }) {
           {/* Logo Section */}
          <div
   onClick={() => handleNavClick('/')}
-  className="flex items-center space-x-2 cursor-pointer group"
+  className="flex items-center space-x-2 cursor-pointer group min-w-0 overflow-hidden"
 >
-  {/* <div className="p-2 bg-gradient-to-br from-primary-royal to-blue-600 rounded-lg shadow-md group-hover:scale-105 transition-transform duration-300">
-    <Trophy className="h-6 w-6 text-accent-gold" />
-  </div> */}
    <img
     src="/favicon.png"
     alt="PACEUPRUN"
-    className="h-12 w-auto object-contain"
+    className="h-8 sm:h-12 w-auto object-contain shrink-0"
   />
 
   <img
     src="/logotext.png"
     alt="PACEUPRUN"
-    className="h-6 w-auto object-contain"
+    className="h-5 sm:h-6 w-auto object-contain max-w-[100px] sm:max-w-[150px]"
   />
 </div>
 
