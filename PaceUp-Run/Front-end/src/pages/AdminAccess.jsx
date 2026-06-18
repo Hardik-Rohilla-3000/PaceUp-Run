@@ -227,8 +227,7 @@ function UserCard({ user, index }) {
           <p className="text-sm text-primary-navy dark:text-white font-medium">{user.address || '—'}</p>
         </div>
         <div className="col-span-2 sm:col-span-3 border-t border-slate-100 dark:border-slate-800 pt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <Field label="Razorpay Order ID"   value={user.razorpay_order_id}   mono />
-          <Field label="Razorpay Payment ID" value={user.razorpay_payment_id} mono />
+          <Field label="Cashfree Order ID" value={user.cashfree_order_id} mono />
         </div>
       </div>
     </div>

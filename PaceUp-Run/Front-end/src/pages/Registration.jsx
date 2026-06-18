@@ -522,7 +522,9 @@ export default function Registration({ registerData, setRegisterData }) {
   const [distance, setDistance] = useState(
     VALID_DISTANCE_IDS.has(registerData.distance) ? registerData.distance : null
   );
-  const [isProcessing, setIsProcessing]     = useState(false);
+  const [isProcessing, setIsProcessing] = useState(
+    !!new URLSearchParams(window.location.search).get('order_id')
+  );
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [paymentDetails, setPaymentDetails] = useState(null);
   const navigate = useNavigate();
