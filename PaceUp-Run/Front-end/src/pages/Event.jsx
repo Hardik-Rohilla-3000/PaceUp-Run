@@ -220,7 +220,7 @@ export default function Event() {
         {/* Banner Column */}
         <div className="lg:col-span-5 relative min-h-[260px] lg:min-h-[460px] bg-slate-950">
           <img
-            src="/runner_hero.png"
+            src="/event-card.png"
             alt="Run for India's glory Banner"
             className="w-full h-full object-cover opacity-60 absolute inset-0"
           />
