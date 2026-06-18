@@ -361,7 +361,7 @@ export default function Footer() {
           <ul className="space-y-4 text-sm">
             <li className="flex items-start space-x-3">
               <Mail className="h-5 w-5 text-accent-gold shrink-0 mt-0.5" />
-              <span className="text-slate-400">paceuprunofficial@gmail.com</span>
+              <a href="mailto:paceuprunofficial@gmail.com" className="text-slate-400 hover:text-accent-gold transition-colors">paceuprunofficial@gmail.com</a>
             </li>
           </ul>
         </div>
