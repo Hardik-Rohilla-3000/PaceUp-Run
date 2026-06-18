@@ -385,7 +385,7 @@
 //           {/* Package Inclusions Box */}
 //           <div className="bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl space-y-4">
 //             <h3 className="font-display font-bold text-base text-primary-navy dark:text-white">
-//               ₹1 Package Inclusions
+//               ₹399 Package Inclusions
 //             </h3>
             
 //             <div className="space-y-3 text-xs text-slate-650 dark:text-slate-350">
@@ -409,7 +409,7 @@
             
 //             <div className="border-t border-slate-200 dark:border-slate-800 pt-3 flex justify-between items-center text-xs">
 //               <span className="text-slate-400">Total Price:</span>
-//               <span className="font-display font-black text-lg text-primary-navy dark:text-white">₹1.00</span>
+//               <span className="font-display font-black text-lg text-primary-navy dark:text-white">₹399.00</span>
 //             </div>
 //           </div>
 
@@ -522,7 +522,8 @@ export default function Registration({ registerData, setRegisterData }) {
   const [distance, setDistance] = useState(
     VALID_DISTANCE_IDS.has(registerData.distance) ? registerData.distance : null
   );
-  const [isProcessing, setIsProcessing] = useState(
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isValidating, setIsValidating] = useState(
     !!new URLSearchParams(window.location.search).get('order_id')
   );
   const [paymentSuccess, setPaymentSuccess] = useState(false);
@@ -542,7 +543,7 @@ export default function Registration({ registerData, setRegisterData }) {
       const data = JSON.parse(saved);
       setRegisterData(data);
       setDistance(data.distance);
-      setIsProcessing(true);
+      setIsValidating(true);
 
       const API_URL  = import.meta.env.VITE_API_URL;
       const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -561,11 +562,10 @@ export default function Registration({ registerData, setRegisterData }) {
           setPaymentDetails(json);
           setPaymentSuccess(true);
           localStorage.removeItem('paceup_register_data');
-          // Clean URL
           navigate('/register', { replace: true });
         })
         .catch(() => alert('Payment received but verification failed. Contact support.'))
-        .finally(() => setIsProcessing(false));
+        .finally(() => setIsValidating(false));
     }
   }, []);
 
@@ -765,7 +765,7 @@ export default function Registration({ registerData, setRegisterData }) {
     const values = [
       (registerData.distance || '').toUpperCase(),
       registerData.phone || '—',
-      '₹1.00',
+      '₹399.00',
       new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
     ];
 
@@ -826,6 +826,18 @@ export default function Registration({ registerData, setRegisterData }) {
     }, 'image/png');
   };
 
+  if (isValidating) {
+    return (
+      <div className="min-h-[70vh] flex flex-col items-center justify-center gap-6 text-center px-4">
+        <Loader2 className="h-14 w-14 animate-spin text-accent-gold" />
+        <div className="space-y-2">
+          <p className="font-display font-bold text-xl text-primary-navy dark:text-white">Verifying Payment…</p>
+          <p className="text-slate-400 text-sm">Please wait, do not close this tab.</p>
+        </div>
+      </div>
+    );
+  }
+
   if (paymentSuccess) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-20 text-center space-y-6 animate-fade-in">
@@ -855,7 +867,7 @@ export default function Registration({ registerData, setRegisterData }) {
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-slate-500 dark:text-slate-400">Amount Paid</span>
-            <span className="font-semibold text-green-600">₹1.00</span>
+            <span className="font-semibold text-green-600">₹399.00</span>
           </div>
         </div>
         <p className="text-xs text-slate-400">
@@ -1142,7 +1154,7 @@ export default function Registration({ registerData, setRegisterData }) {
                 </>
               ) : (
                 <>
-                  <span>Proceed to Checkout (₹1)</span>
+                  <span>Proceed to Checkout (₹399)</span>
                   <ChevronRight className="h-5 w-5" />
                 </>
               )}
@@ -1155,7 +1167,7 @@ export default function Registration({ registerData, setRegisterData }) {
         <div className="lg:col-span-4 space-y-6">
           <div className="bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl space-y-4">
             <h3 className="font-display font-bold text-base text-primary-navy dark:text-white">
-              ₹1 Package Inclusions
+              ₹399 Package Inclusions
             </h3>
 
             <div className="space-y-3 text-xs text-slate-650 dark:text-slate-350">
@@ -1179,7 +1191,7 @@ export default function Registration({ registerData, setRegisterData }) {
 
             <div className="border-t border-slate-200 dark:border-slate-800 pt-3 flex justify-between items-center text-xs">
               <span className="text-slate-400">Total Price:</span>
-              <span className="font-display font-black text-lg text-primary-navy dark:text-white">₹1.00</span>
+              <span className="font-display font-black text-lg text-primary-navy dark:text-white">₹399.00</span>
             </div>
           </div>
 
