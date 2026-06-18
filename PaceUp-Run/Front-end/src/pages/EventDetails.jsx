@@ -307,7 +307,7 @@ export default function EventDetails() {
 
         <div className="relative rounded-3xl overflow-hidden h-[250px] sm:h-[400px] bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-lg">
           <img 
-            src="/runner_hero.png" 
+            src="/banner.png" 
             alt="Virtual Run Challenge 2026 Detailed Banner" 
             className="w-full h-full object-cover opacity-50"
           />
