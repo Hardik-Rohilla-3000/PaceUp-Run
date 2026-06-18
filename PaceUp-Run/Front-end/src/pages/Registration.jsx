@@ -531,9 +531,8 @@ export default function Registration({ registerData, setRegisterData }) {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const orderId = params.get('order_id');
-    const status  = params.get('payment_status');
 
-    if (!orderId || status !== 'SUCCESS') return;
+    if (!orderId) return;
 
     // Restore saved form data
     const saved = localStorage.getItem('paceup_register_data');
