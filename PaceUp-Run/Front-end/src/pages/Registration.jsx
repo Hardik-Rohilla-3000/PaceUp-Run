@@ -454,7 +454,6 @@
 
 
 import React, { useState, useEffect } from 'react';
-import { load as loadCashfree } from '@cashfreepayments/cashfree-js';
 import { useNavigate } from 'react-router-dom';
 import { User, Mail, Phone, MapPin, CheckCircle2, ChevronRight, Award, Trophy, Loader2 } from 'lucide-react';
 
@@ -668,7 +667,7 @@ export default function Registration({ registerData, setRegisterData }) {
       // Save form data before redirect (Cashfree navigates away)
       localStorage.setItem('paceup_register_data', JSON.stringify(finalData));
 
-      const cashfree = await loadCashfree({
+      const cashfree = window.Cashfree({
         mode: import.meta.env.VITE_CASHFREE_MODE || 'production',
       });
 
