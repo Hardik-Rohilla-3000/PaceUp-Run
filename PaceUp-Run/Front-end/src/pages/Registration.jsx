@@ -373,7 +373,7 @@
 //               type="submit"
 //               className="w-full font-display font-bold uppercase tracking-wider text-center py-4 rounded-xl bg-gradient-to-r from-accent-gold to-yellow-600 hover:from-yellow-400 hover:to-accent-gold text-primary-navy shadow-lg shadow-yellow-500/20 transform hover:-translate-y-0.5 transition-all duration-200 cursor-pointer flex items-center justify-center space-x-2"
 //             >
-//               <span>Proceed to Checkout (₹399)</span>
+//               <span>Proceed to Checkout (₹1)</span>
 //               <ChevronRight className="h-5 w-5" />
 //             </button>
 //           </div>
@@ -385,7 +385,7 @@
 //           {/* Package Inclusions Box */}
 //           <div className="bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl space-y-4">
 //             <h3 className="font-display font-bold text-base text-primary-navy dark:text-white">
-//               ₹399 Package Inclusions
+//               ₹1 Package Inclusions
 //             </h3>
             
 //             <div className="space-y-3 text-xs text-slate-650 dark:text-slate-350">
@@ -409,7 +409,7 @@
             
 //             <div className="border-t border-slate-200 dark:border-slate-800 pt-3 flex justify-between items-center text-xs">
 //               <span className="text-slate-400">Total Price:</span>
-//               <span className="font-display font-black text-lg text-primary-navy dark:text-white">₹399.00</span>
+//               <span className="font-display font-black text-lg text-primary-navy dark:text-white">₹1.00</span>
 //             </div>
 //           </div>
 
@@ -764,7 +764,7 @@ export default function Registration({ registerData, setRegisterData }) {
     const values = [
       (registerData.distance || '').toUpperCase(),
       registerData.phone || '—',
-      '₹399.00',
+      '₹1.00',
       new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
     ];
 
@@ -854,7 +854,7 @@ export default function Registration({ registerData, setRegisterData }) {
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-slate-500 dark:text-slate-400">Amount Paid</span>
-            <span className="font-semibold text-green-600">₹399.00</span>
+            <span className="font-semibold text-green-600">₹1.00</span>
           </div>
         </div>
         <p className="text-xs text-slate-400">
@@ -1141,7 +1141,7 @@ export default function Registration({ registerData, setRegisterData }) {
                 </>
               ) : (
                 <>
-                  <span>Proceed to Checkout (₹399)</span>
+                  <span>Proceed to Checkout (₹1)</span>
                   <ChevronRight className="h-5 w-5" />
                 </>
               )}
@@ -1154,7 +1154,7 @@ export default function Registration({ registerData, setRegisterData }) {
         <div className="lg:col-span-4 space-y-6">
           <div className="bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl space-y-4">
             <h3 className="font-display font-bold text-base text-primary-navy dark:text-white">
-              ₹399 Package Inclusions
+              ₹1 Package Inclusions
             </h3>
 
             <div className="space-y-3 text-xs text-slate-650 dark:text-slate-350">
@@ -1178,7 +1178,7 @@ export default function Registration({ registerData, setRegisterData }) {
 
             <div className="border-t border-slate-200 dark:border-slate-800 pt-3 flex justify-between items-center text-xs">
               <span className="text-slate-400">Total Price:</span>
-              <span className="font-display font-black text-lg text-primary-navy dark:text-white">₹399.00</span>
+              <span className="font-display font-black text-lg text-primary-navy dark:text-white">₹1.00</span>
             </div>
           </div>
 

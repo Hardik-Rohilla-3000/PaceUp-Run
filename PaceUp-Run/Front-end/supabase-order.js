@@ -3,7 +3,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const REGISTRATION_FEE = 399.00 // ₹399.00 — never trust the client for this
+const REGISTRATION_FEE = 1.00 // ₹1.00 — testing only, change back to 399.00 before launch
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
