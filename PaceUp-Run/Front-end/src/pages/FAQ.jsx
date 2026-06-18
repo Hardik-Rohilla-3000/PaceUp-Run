@@ -330,7 +330,7 @@ export default function FAQ() {
         <div className="flex flex-col sm:flex-row gap-3 md:justify-end">
           <a
             href="mailto:paceuprunofficial@gmail.com"
-            className="font-display text-center font-bold text-xs uppercase tracking-widest px-6 py-3 border border-slate-350 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="font-display text-center font-bold text-xs uppercase tracking-widest px-6 py-3 bg-accent-gold text-primary-navy rounded-xl hover:opacity-90 transition-opacity"
           >
             Email Support
           </a>
