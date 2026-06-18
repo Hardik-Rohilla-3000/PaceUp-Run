@@ -454,6 +454,8 @@
 
 
 import React, { useState, useEffect } from 'react';
+import { load as loadCashfree } from '@cashfreepayments/cashfree-js';
+import { useNavigate } from 'react-router-dom';
 import { User, Mail, Phone, MapPin, CheckCircle2, ChevronRight, Award, Trophy, Loader2 } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
@@ -518,18 +520,54 @@ const VALID_DISTANCE_IDS = new Set(['1600m', '3k', '5k', '10k', '21k']);
 
 export default function Registration({ registerData, setRegisterData }) {
   const [errors, setErrors]             = useState({});
-
-  // CHANGE 2: null default — no distance pre-selected.
-  // If registerData.distance is a valid known ID (e.g. from a legitimate
-  // re-render), we honour it. If it's anything else ('10K', '', undefined,
-  // a stale value), we fall back to null so the user must pick explicitly.
   const [distance, setDistance] = useState(
     VALID_DISTANCE_IDS.has(registerData.distance) ? registerData.distance : null
   );
-
   const [isProcessing, setIsProcessing]     = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [paymentDetails, setPaymentDetails] = useState(null);
+  const navigate = useNavigate();
+
+  // On mount: check if returning from Cashfree redirect
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const orderId = params.get('order_id');
+    const status  = params.get('payment_status');
+
+    if (!orderId || status !== 'SUCCESS') return;
+
+    // Restore saved form data
+    const saved = localStorage.getItem('paceup_register_data');
+    if (saved) {
+      const data = JSON.parse(saved);
+      setRegisterData(data);
+      setDistance(data.distance);
+      setIsProcessing(true);
+
+      const API_URL  = import.meta.env.VITE_API_URL;
+      const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+      fetch(`${API_URL}/validate`, {
+        method:  'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey':        ANON_KEY,
+          'Authorization': `Bearer ${ANON_KEY}`,
+        },
+        body: JSON.stringify({ order_id: orderId, ...data }),
+      })
+        .then(r => r.json())
+        .then(json => {
+          setPaymentDetails(json);
+          setPaymentSuccess(true);
+          localStorage.removeItem('paceup_register_data');
+          // Clean URL
+          navigate('/register', { replace: true });
+        })
+        .catch(() => alert('Payment received but verification failed. Contact support.'))
+        .finally(() => setIsProcessing(false));
+    }
+  }, []);
 
   useEffect(() => {
     if (paymentSuccess) window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -597,103 +635,47 @@ export default function Registration({ registerData, setRegisterData }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     const finalData = { ...registerData, distance };
     setRegisterData(finalData);
-
     setIsProcessing(true);
 
     try {
-      const API_URL    = import.meta.env.VITE_API_URL;
-      const ANON_KEY   = import.meta.env.VITE_SUPABASE_ANON_KEY;
-      const RECEIPT_ID = `receipt_${Date.now()}`;
-
-      const supabaseHeaders = {
-        'Content-Type': 'application/json',
-        'apikey':        ANON_KEY,
-        'Authorization': `Bearer ${ANON_KEY}`,
-      };
+      const API_URL  = import.meta.env.VITE_API_URL;
+      const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
       const orderResponse = await fetch(`${API_URL}/order`, {
         method:  'POST',
-        headers: supabaseHeaders,
-        body:    JSON.stringify({ receipt: RECEIPT_ID }),
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey':        ANON_KEY,
+          'Authorization': `Bearer ${ANON_KEY}`,
+        },
+        body: JSON.stringify({
+          customer_name:  finalData.name,
+          customer_email: finalData.email,
+          customer_phone: finalData.phone,
+        }),
       });
 
       if (!orderResponse.ok) {
-        throw new Error(`Order creation failed: ${orderResponse.status} ${orderResponse.statusText}`);
+        throw new Error(`Order creation failed: ${orderResponse.status}`);
       }
 
-      const order = await orderResponse.json();
+      const { payment_session_id } = await orderResponse.json();
 
-      const options = {
-        key:         import.meta.env.VITE_RAZORPAY_KEY_ID,
-        amount:      order.amount,   // always from server, never set client-side
-        currency:    order.currency,
-        name:        'PaceUp Run',
-        description: 'Virtual Run Challenge 2026 Registration',
-        order_id:    order.id,
-        image:       '/favicon.png',
-        prefill: {
-          name:    finalData.name,
-          email:   finalData.email,
-          contact: finalData.phone,
-        },
-        handler: async function (response) {
-          try {
-            const validateResponse = await fetch(`${API_URL}/validate`, {
-              method:  'POST',
-              headers: supabaseHeaders,
-              body:    JSON.stringify({
-                ...response,
-                name:     finalData.name,
-                email:    finalData.email,
-                phone:    finalData.phone,
-                address:  finalData.address,
-                city:     finalData.city,
-                state:    finalData.state,
-                pincode:  finalData.pincode,
-                distance: finalData.distance,
-              }),
-            });
+      // Save form data before redirect (Cashfree navigates away)
+      localStorage.setItem('paceup_register_data', JSON.stringify(finalData));
 
-            if (!validateResponse.ok) {
-              throw new Error(`Validation failed: ${validateResponse.status}`);
-            }
-
-            const jsonResponse = await validateResponse.json();
-            setPaymentDetails(jsonResponse);
-            setPaymentSuccess(true);
-          } catch (err) {
-            console.error('Payment validation error:', err);
-            alert('Payment was received but could not be verified. Please contact support.');
-          } finally {
-            setIsProcessing(false);
-          }
-        },
-        modal: {
-          ondismiss: () => {
-            setIsProcessing(false);
-          },
-        },
-      };
-
-      const rzp = new window.Razorpay(options);
-
-      rzp.on('payment.failed', function (response) {
-        console.error('Razorpay payment failed:', response.error);
-        alert(
-          `Payment failed: ${response.error.description}\n` +
-          `Reason: ${response.error.reason}`
-        );
-        setIsProcessing(false);
+      const cashfree = await loadCashfree({
+        mode: import.meta.env.VITE_CASHFREE_MODE || 'production',
       });
 
-      rzp.open();
+      cashfree.checkout({
+        paymentSessionId: payment_session_id,
+        returnUrl: `${window.location.origin}/register?order_id={order_id}&payment_status={payment_status}`,
+      });
 
     } catch (err) {
       console.error('Checkout error:', err);
