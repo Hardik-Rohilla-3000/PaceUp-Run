@@ -188,7 +188,7 @@ export default function Event() {
   title: 'Run for India\'s Glory 2026',
   fee: '₹399',
   timeline: '12 July 2026 – 18 July 2026',
-  registrationCloses: '11 July 2026',
+  registrationCloses: '11 July 2026 at 11:59 PM IS',
   location: 'Run Anywhere (Self-Paced)',
   inclusions: [
     'Premium Theme-Based Acrylic Trophy',
@@ -265,17 +265,19 @@ export default function Event() {
 
     {/* Quick Details grid */}
 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+         <div className="flex items-center space-x-2.5 text-slate-500 dark:text-slate-400 text-xs">
+    <Calendar className="h-5 w-5 text-red-500 shrink-0" />
+    <span>
+      <strong>Registration Closes:</strong> {activeEvent.registrationCloses}
+    </span>
+  </div> 
+      
   <div className="flex items-center space-x-2.5 text-slate-500 dark:text-slate-400 text-xs">
     <Calendar className="h-5 w-5 text-primary-blue shrink-0" />
     <span><strong>Timeline:</strong> {activeEvent.timeline}</span>
   </div>
 
-  <div className="flex items-center space-x-2.5 text-slate-500 dark:text-slate-400 text-xs">
-    <Calendar className="h-5 w-5 text-red-500 shrink-0" />
-    <span>
-      <strong>Registration Closes:</strong> {activeEvent.registrationCloses}
-    </span>
-  </div>
+
 </div>
             {/* Inclusions checklist */}
             <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
