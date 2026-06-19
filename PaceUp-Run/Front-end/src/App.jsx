@@ -292,3 +292,5 @@ export default function App() {
     </>
   );
 }
+
+// Updated and maintained by 3Digree (3digree.in)
