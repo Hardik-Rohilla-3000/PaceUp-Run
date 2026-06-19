@@ -455,7 +455,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Mail, Phone, MapPin, CheckCircle2, ChevronRight, Award, Trophy, Loader2 } from 'lucide-react';
+import { User, Mail, Phone, MapPin, CheckCircle2, ChevronRight, Award, Trophy, Loader2, XCircle } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
 // CHANGE LOG (this session — distance fix + full loophole audit)
@@ -527,6 +527,7 @@ export default function Registration({ registerData, setRegisterData }) {
     !!new URLSearchParams(window.location.search).get('order_id')
   );
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [paymentFailed, setPaymentFailed]   = useState(false);
   const [paymentDetails, setPaymentDetails] = useState(null);
   const navigate = useNavigate();
 
@@ -557,14 +558,18 @@ export default function Registration({ registerData, setRegisterData }) {
         },
         body: JSON.stringify({ order_id: orderId, ...data }),
       })
-        .then(r => r.json())
-        .then(json => {
-          setPaymentDetails(json);
-          setPaymentSuccess(true);
-          localStorage.removeItem('paceup_register_data');
+        .then(async r => {
+          const json = await r.json();
+          if (r.ok) {
+            setPaymentDetails(json);
+            setPaymentSuccess(true);
+            localStorage.removeItem('paceup_register_data');
+          } else {
+            setPaymentFailed(true);
+          }
           navigate('/register', { replace: true });
         })
-        .catch(() => alert('Payment received but verification failed. Contact support.'))
+        .catch(() => setPaymentFailed(true))
         .finally(() => setIsValidating(false));
     }
   }, []);
@@ -834,6 +839,32 @@ export default function Registration({ registerData, setRegisterData }) {
           <p className="font-display font-bold text-xl text-primary-navy dark:text-white">Verifying Payment…</p>
           <p className="text-slate-400 text-sm">Please wait, do not close this tab.</p>
         </div>
+      </div>
+    );
+  }
+
+  if (paymentFailed) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-20 text-center space-y-6 animate-fade-in">
+        <div className="flex justify-center">
+          <XCircle className="h-20 w-20 text-red-500" />
+        </div>
+        <h1 className="font-display font-black text-3xl sm:text-4xl text-primary-navy dark:text-white">
+          Payment Failed
+        </h1>
+        <p className="text-slate-500 dark:text-slate-400 text-base">
+          Your payment was not completed or was cancelled. No amount has been deducted.
+        </p>
+        <button
+          onClick={() => { setPaymentFailed(false); localStorage.removeItem('paceup_register_data'); }}
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-accent-gold text-primary-navy font-bold text-sm hover:opacity-90 transition-opacity shadow-md"
+        >
+          Try Again
+        </button>
+        <p className="text-xs text-slate-400">
+          If money was deducted, contact us at{' '}
+          <a href="mailto:paceuprunofficial@gmail.com" className="underline">paceuprunofficial@gmail.com</a>
+        </p>
       </div>
     );
   }
