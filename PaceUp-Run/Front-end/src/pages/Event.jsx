@@ -188,7 +188,7 @@ export default function Event() {
   title: 'Run for India\'s Glory 2026',
   fee: '₹399',
   timeline: '12 July 2026 – 18 July 2026',
-  registrationCloses: '11 July 2026 at 11:59 PM IS',
+  registrationCloses: '11 July 2026 at 11:59 PM IST',
   location: 'Run Anywhere (Self-Paced)',
   inclusions: [
     'Premium Theme-Based Acrylic Trophy',
