@@ -185,19 +185,21 @@ export default function Event() {
   const navigate = useNavigate();
 
   const activeEvent = {
-    title: 'Run for India\'s Glory 2026',
-    fee: '₹399',
-    timeline: '11 July 2026',
-    location: 'Run Anywhere (Self-Paced)',
-    inclusions: [
-      'Premium Theme-Based Acrylic Trophy',
-      'Downloadable High-Res Digital Finisher Certificate',
-      'Free Shipping and Tracking Across India',
-      'Proud Finisher Recognition',
-    ],
-    summary: 'Challenge yourself to run, walk, or jog at your own pace, anywhere, anytime. Achieve your fitness milestones and earn exclusive finisher rewards that celebrate your dedication and achievement.',
-  };
-
+  title: 'Run for India\'s Glory 2026',
+  fee: '₹399',
+  timeline: '12 July 2026 – 18 July 2026',
+  registrationCloses: '11 July 2026',
+  location: 'Run Anywhere (Self-Paced)',
+  inclusions: [
+    'Premium Theme-Based Acrylic Trophy',
+    'Downloadable High-Res Digital Finisher Certificate',
+    'Free Shipping and Tracking Across India',
+    'Proud Finisher Recognition',
+  ],
+  summary:
+    'Challenge yourself to run, walk, or jog at your own pace, anywhere, anytime. Achieve your fitness milestones and earn exclusive finisher rewards that celebrate your dedication and achievement.',
+};
+      
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16 animate-fade-in">
 
@@ -261,18 +263,20 @@ export default function Event() {
               {activeEvent.summary}
             </p>
 
-            {/* Quick Details grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-              <div className="flex items-center space-x-2.5 text-slate-500 dark:text-slate-400 text-xs">
-                <Calendar className="h-5 w-5 text-primary-blue shrink-0" />
-                <span><strong>Timeline:</strong> {activeEvent.timeline}</span>
-              </div>
-              {/* <div className="flex items-center space-x-2.5 text-slate-500 dark:text-slate-400 text-xs">
-                <Clock className="h-5 w-5 text-primary-blue shrink-0" />
-                <span><strong>Format:</strong> Any running application</span>
-              </div> */}
-            </div>
+    {/* Quick Details grid */}
+<div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+  <div className="flex items-center space-x-2.5 text-slate-500 dark:text-slate-400 text-xs">
+    <Calendar className="h-5 w-5 text-primary-blue shrink-0" />
+    <span><strong>Timeline:</strong> {activeEvent.timeline}</span>
+  </div>
 
+  <div className="flex items-center space-x-2.5 text-slate-500 dark:text-slate-400 text-xs">
+    <Calendar className="h-5 w-5 text-red-500 shrink-0" />
+    <span>
+      <strong>Registration Closes:</strong> {activeEvent.registrationCloses}
+    </span>
+  </div>
+</div>
             {/* Inclusions checklist */}
             <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
               <h4 className="font-display font-bold text-sm text-primary-navy dark:text-white uppercase tracking-wider">
