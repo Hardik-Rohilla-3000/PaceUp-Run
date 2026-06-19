@@ -187,7 +187,7 @@ export default function Event() {
   const activeEvent = {
     title: 'Run for India\'s Glory 2026',
     fee: '₹399',
-    timeline: 'Will be announced soon',
+    timeline: '11 July 2026',
     location: 'Run Anywhere (Self-Paced)',
     inclusions: [
       'Premium Theme-Based Acrylic Trophy',
