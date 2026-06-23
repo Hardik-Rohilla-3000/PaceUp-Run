@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, Lock, Loader2, Mail, LogOut } from 'lucide-react';
+import { Shield, Lock, Loader2, Mail, LogOut, Trash2 } from 'lucide-react';
 
 const SESSION_KEY = 'pa_admin_v1';
 const SESSION_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days
@@ -12,6 +12,9 @@ export default function AdminAccess() {
   const [error, setError]                     = useState('');
   const [isLoading, setIsLoading]             = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
+  const [credentials, setCredentials]         = useState({ email: '', password: '' });
+  const [deleteTarget, setDeleteTarget]       = useState(null);
+  const [isDeleting, setIsDeleting]           = useState(false);
 
   const callAdminData = (em, pw) =>
     fetch(`${import.meta.env.VITE_API_URL}/admin-data`, {
@@ -40,6 +43,7 @@ export default function AdminAccess() {
         if (res.ok) {
           setUsers(await res.json());
           setIsAuthenticated(true);
+          setCredentials({ email: em, password: pw });
         } else {
           localStorage.removeItem(SESSION_KEY);
         }
@@ -62,6 +66,7 @@ export default function AdminAccess() {
       const data = await res.json();
       setUsers(data);
       setIsAuthenticated(true);
+      setCredentials({ email, password });
       localStorage.setItem(SESSION_KEY, JSON.stringify({
         email, password, expiry: Date.now() + SESSION_TTL,
       }));
@@ -78,6 +83,31 @@ export default function AdminAccess() {
     setUsers([]);
     setEmail('');
     setPassword('');
+  };
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/admin-delete`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey':        import.meta.env.VITE_SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        },
+        body: JSON.stringify({ email: credentials.email, password: credentials.password, id: deleteTarget.id }),
+      });
+      if (res.ok) {
+        setUsers(prev => prev.filter(u => u.id !== deleteTarget.id));
+        setDeleteTarget(null);
+      } else {
+        alert('Delete failed. Try again.');
+      }
+    } catch {
+      alert('Something went wrong.');
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   if (checkingSession) {
@@ -146,8 +176,45 @@ export default function AdminAccess() {
   const paid    = users.filter(u => u.payment_status === 'paid');
   const pending = users.filter(u => u.payment_status === 'pending');
 
+  const confirmModal = deleteTarget && (
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 w-full max-w-sm shadow-2xl space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center shrink-0">
+            <Trash2 className="h-5 w-5 text-red-500" />
+          </div>
+          <div>
+            <p className="font-bold text-sm text-primary-navy dark:text-white">Delete Registration?</p>
+            <p className="text-xs text-slate-400 mt-0.5">{deleteTarget.name}</p>
+          </div>
+        </div>
+        <p className="text-xs text-slate-500 dark:text-slate-400">
+          Yeh action undo nahi hoga. Database se permanently delete ho jayega.
+        </p>
+        <div className="flex gap-3 pt-1">
+          <button
+            onClick={() => setDeleteTarget(null)}
+            disabled={isDeleting}
+            className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleDelete}
+            disabled={isDeleting}
+            className="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-bold transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+          >
+            {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+            {isDeleting ? 'Deleting…' : 'Delete'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-12 space-y-10">
+      {confirmModal}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="font-display font-black text-2xl sm:text-3xl text-primary-navy dark:text-white">
@@ -183,7 +250,7 @@ export default function AdminAccess() {
         ) : (
           <div className="grid grid-cols-1 gap-4">
             {paid.map((user, index) => (
-              <UserCard key={user.id} user={user} index={index} />
+              <UserCard key={user.id} user={user} index={index} onDelete={() => setDeleteTarget(user)} />
             ))}
           </div>
         )}
@@ -201,7 +268,7 @@ export default function AdminAccess() {
         ) : (
           <div className="grid grid-cols-1 gap-4">
             {pending.map((user, index) => (
-              <UserCard key={user.id} user={user} index={index} isDraft />
+              <UserCard key={user.id} user={user} index={index} isDraft onDelete={() => setDeleteTarget(user)} />
             ))}
           </div>
         )}
@@ -210,7 +277,7 @@ export default function AdminAccess() {
   );
 }
 
-function UserCard({ user, index, isDraft = false }) {
+function UserCard({ user, index, isDraft = false, onDelete }) {
   const registeredAt = user.created_at
     ? new Date(user.created_at).toLocaleString('en-IN', {
         day: '2-digit', month: 'short', year: 'numeric',
@@ -241,6 +308,13 @@ function UserCard({ user, index, isDraft = false }) {
           }`}>
             {user.payment_status === 'paid' ? 'Paid' : 'Pending'}
           </span>
+          <button
+            onClick={onDelete}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+            title="Delete"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
         </div>
       </div>
 
