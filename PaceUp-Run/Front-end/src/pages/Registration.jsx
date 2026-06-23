@@ -661,6 +661,11 @@ export default function Registration({ registerData, setRegisterData }) {
           customer_name:  finalData.name,
           customer_email: finalData.email,
           customer_phone: finalData.phone,
+          address:        finalData.address,
+          city:           finalData.city,
+          state:          finalData.state,
+          pincode:        finalData.pincode,
+          distance:       finalData.distance,
         }),
       });
 

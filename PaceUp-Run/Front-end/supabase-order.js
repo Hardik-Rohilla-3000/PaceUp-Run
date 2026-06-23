@@ -1,3 +1,5 @@
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -11,7 +13,10 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { customer_name, customer_email, customer_phone } = await req.json()
+    const {
+      customer_name, customer_email, customer_phone,
+      address, city, state, pincode, distance,
+    } = await req.json()
 
     const CASHFREE_APP_ID     = Deno.env.get('CASHFREE_APP_ID')
     const CASHFREE_SECRET_KEY = Deno.env.get('CASHFREE_SECRET_KEY')
@@ -51,6 +56,25 @@ Deno.serve(async (req) => {
         status: 400,
       })
     }
+
+    // Save as pending — fallback agar payment ke baad localStorage na mile
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL'),
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+    )
+
+    await supabase.from('registrations').insert({
+      name:              customer_name,
+      email:             customer_email,
+      phone:             customer_phone,
+      address:           address  || '',
+      city:              city     || '',
+      state:             state    || '',
+      pincode:           pincode  || '',
+      distance:          distance || '',
+      cashfree_order_id: order.order_id,
+      payment_status:    'pending',
+    })
 
     return new Response(JSON.stringify({
       payment_session_id: order.payment_session_id,

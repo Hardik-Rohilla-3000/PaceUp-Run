@@ -143,15 +143,18 @@ export default function AdminAccess() {
     );
   }
 
+  const paid    = users.filter(u => u.payment_status === 'paid');
+  const pending = users.filter(u => u.payment_status === 'pending');
+
   return (
-    <div className="max-w-5xl mx-auto px-4 py-12 space-y-8">
+    <div className="max-w-5xl mx-auto px-4 py-12 space-y-10">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="font-display font-black text-2xl sm:text-3xl text-primary-navy dark:text-white">
             Admin Panel
           </h1>
           <p className="text-slate-400 text-sm mt-1">
-            {users.length} registered participant{users.length !== 1 ? 's' : ''}
+            {paid.length} paid · {pending.length} pending
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -169,20 +172,45 @@ export default function AdminAccess() {
         </div>
       </div>
 
-      {users.length === 0 ? (
-        <div className="text-center py-24 text-slate-400 text-sm">No registrations yet.</div>
-      ) : (
-        <div className="grid grid-cols-1 gap-4">
-          {users.map((user, index) => (
-            <UserCard key={user.id} user={user} index={index} />
-          ))}
-        </div>
-      )}
+      {/* Paid Registrations */}
+      <div className="space-y-4">
+        <h2 className="font-display font-bold text-lg text-primary-navy dark:text-white flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-green-500 inline-block"></span>
+          Confirmed Registrations ({paid.length})
+        </h2>
+        {paid.length === 0 ? (
+          <div className="text-center py-10 text-slate-400 text-sm">No paid registrations yet.</div>
+        ) : (
+          <div className="grid grid-cols-1 gap-4">
+            {paid.map((user, index) => (
+              <UserCard key={user.id} user={user} index={index} />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Draft / Pending */}
+      <div className="space-y-4">
+        <h2 className="font-display font-bold text-lg text-primary-navy dark:text-white flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-yellow-400 inline-block"></span>
+          Draft Payments ({pending.length})
+        </h2>
+        <p className="text-xs text-slate-400 -mt-2">Form bhara, payment ka pata nahi — inhe contact karo.</p>
+        {pending.length === 0 ? (
+          <div className="text-center py-10 text-slate-400 text-sm">No pending payments.</div>
+        ) : (
+          <div className="grid grid-cols-1 gap-4">
+            {pending.map((user, index) => (
+              <UserCard key={user.id} user={user} index={index} isDraft />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
-function UserCard({ user, index }) {
+function UserCard({ user, index, isDraft = false }) {
   const registeredAt = user.created_at
     ? new Date(user.created_at).toLocaleString('en-IN', {
         day: '2-digit', month: 'short', year: 'numeric',
@@ -209,9 +237,9 @@ function UserCard({ user, index }) {
           <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${
             user.payment_status === 'paid'
               ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-              : 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'
+              : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
           }`}>
-            {user.payment_status === 'paid' ? 'Paid' : 'Unpaid'}
+            {user.payment_status === 'paid' ? 'Paid' : 'Pending'}
           </span>
         </div>
       </div>
