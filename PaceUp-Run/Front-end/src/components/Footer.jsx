@@ -300,7 +300,7 @@ export default function Footer() {
             ))}
             <li>
               <button
-                onClick={() => handleLinkClick('/register')}
+                // onClick={() => handleLinkClick('/register')}
                 className="text-accent-gold hover:underline font-semibold cursor-pointer text-left"
               >
                 Join Active Challenge

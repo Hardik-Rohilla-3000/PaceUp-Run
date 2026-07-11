@@ -414,11 +414,10 @@ export default function EventDetails() {
             </div>
 
             <button 
-              onClick={() => navigate('/register')}
-              className="w-full font-display font-bold uppercase tracking-wider py-4 rounded-xl bg-gradient-to-r
-               from-accent-gold to-yellow-600 hover:from-yellow-400 hover:to-accent-gold text-primary-navy shadow-lg shadow-yellow-500/20 cursor-pointer"
+              // onClick={() => navigate('/register')}
+              className="w-full font-display font-bold uppercase tracking-wider py-4 rounded-xl bg-gradient-to-r from-red-700 to-gray-800  text-white  cursor-pointer"
             >
-              Register Now (₹399)
+              Registerations are closed
             </button>
           </div>
 
@@ -512,10 +511,10 @@ export default function EventDetails() {
           Join the Virtual Challenge Today for ₹399
         </h3>
         <button 
-          onClick={() => navigate('/register')}
-          className="font-display font-bold uppercase tracking-wider px-12 py-4 rounded-xl bg-gradient-to-r from-accent-gold to-yellow-600 hover:from-yellow-400 hover:to-accent-gold text-primary-navy shadow-lg shadow-yellow-500/20 transform hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
+          // onClick={() => navigate('/register')}
+          className="font-display font-bold uppercase tracking-wider px-12 py-4 rounded-xl bg-gradient-to-r from-red-700 to-gray-800  text-white transform hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
         >
-          Register Now - ₹399
+          Registerations are closed
         </button>
       </div>
 
