@@ -68,7 +68,7 @@
 //               Run for India's Glory 2026 is a nationwide virtual running challenge that brings together fitness enthusiasts, passionate runners, and proud citizens in a celebration of endurance, determination, and national spirit. Designed for participants of all fitness levels, the event offers multiple distance categories including 1600m, 3K, 5K, 10K, and 21K, allowing everyone to take part and challenge themselves.
 //             </p>
 //             <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
-//               More than just a run, this event is an opportunity to embrace a healthier lifestyle while running for a cause greater than yourself—the glory of India. Whether you're a beginner taking your first steps or an experienced runner pursuing a new milestone, every kilometer completed reflects dedication, perseverance, and pride. Join runners from across the country and be part of a movement that celebrates fitness, achievement, and the spirit of the nation.
+//               More than just a run, this event is an opportunity to embrace a healthier lifestyle while running for a cause greater than yourself-the glory of India. Whether you're a beginner taking your first steps or an experienced runner pursuing a new milestone, every kilometer completed reflects dedication, perseverance, and pride. Join runners from across the country and be part of a movement that celebrates fitness, achievement, and the spirit of the nation.
 //             </p>
 //           </div>
 
@@ -119,7 +119,7 @@
 //             <div className="space-y-2">
 //               <h3 className="font-display font-bold text-sm uppercase tracking-wider text-slate-400">Registration fees</h3>
 //               <div className="flex items-center justify-center space-x-3">
-//                 <span className="font-display font-black text-4xl text-primary-navy dark:text-white">₹399</span>
+//                 <span className="font-display font-black text-4xl text-primary-navy dark:text-white">₹499</span>
 //                 {/* <span className="text-lg text-slate-450 line-through">₹799</span> */}
 //                 {/* <span className="text-xs font-bold px-2 py-0.5 bg-red-500/10 text-red-500 dark:text-red-400 border border-red-500/20 rounded">50% OFF</span> */}
 //               </div>
@@ -146,7 +146,7 @@
 //               className="w-full font-display font-bold uppercase tracking-wider py-4 rounded-xl bg-gradient-to-r
 //                from-accent-gold to-yellow-600 hover:from-yellow-400 hover:to-accent-gold text-primary-navy shadow-lg shadow-yellow-500/20 cursor-pointer"
 //             >
-//               Register Now (₹399)
+//               Register Now (₹499)
 //             </button>
 //           </div>
 
@@ -174,7 +174,7 @@
 //               Trophy & Certificate Showcase
 //             </h2>
 //             <p className="text-slate-500 dark:text-slate-400 max-w-2xl mx-auto text-sm sm:text-base">
-//               Take a closer look at the exclusive premium rewards included with your ₹399 registration fee.
+//               Take a closer look at the exclusive premium rewards included with your ₹499 registration fee.
 //             </p>
 //           </div>
 
@@ -238,13 +238,13 @@
 //       {/* 4. Bottom CTAs */}
 //       <div className="text-center pt-4 space-y-4">
 //         <h3 className="font-display font-bold text-xl text-primary-navy dark:text-white">
-//           Join the Virtual Challenge Today for ₹399
+//           Join the Virtual Challenge Today for ₹499
 //         </h3>
 //         <button 
 //           onClick={() => setPage('register')}
 //           className="font-display font-bold uppercase tracking-wider px-12 py-4 rounded-xl bg-gradient-to-r from-accent-gold to-yellow-600 hover:from-yellow-400 hover:to-accent-gold text-primary-navy shadow-lg shadow-yellow-500/20 transform hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
 //         >
-//           Register Now - ₹399
+//           Register Now - ₹499
 //         </button>
 //       </div>
 
@@ -271,15 +271,36 @@
 
 
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar, Shield, Award, Trophy, MapPin, Truck, ChevronRight, FileText, CheckCircle2, Info } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+const API_URL  = import.meta.env.VITE_API_URL;
+const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
 export default function EventDetails() {
   const navigate = useNavigate();
+  const [submissionOpen, setSubmissionOpen] = useState(false);
+
+  useEffect(() => {
+    fetch(`${API_URL}/get-settings`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': ANON_KEY,
+        'Authorization': `Bearer ${ANON_KEY}`,
+      },
+      body: JSON.stringify({}),
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data.submission_open === 'true') setSubmissionOpen(true);
+      })
+      .catch(() => {});
+  }, []);
 
   const rules = [
-    'The run must be completed within the official challenge period. Dates will be announced separately.',
+    'The run must be completed within the official challenge period from 12 July 2026 to 18 July 2026.',
     'There is no minimum pace requirement. You can run, walk, or jog at your comfort level.',
     'Any GPS running application (Strava, Garmin, NRC, Google Fit, etc.) or treadmill panel counts.',
     'Workout screenshots must show: distance, date (if possible), time elapsed, and other activity details.',
@@ -342,7 +363,7 @@ export default function EventDetails() {
               Run for India's Glory 2026 is a nationwide virtual running challenge that brings together fitness enthusiasts, passionate runners, and proud citizens in a celebration of endurance, determination, and national spirit. Designed for participants of all fitness levels, the event offers multiple distance categories including 1600m, 3K, 5K, 10K, and 21K, allowing everyone to take part and challenge themselves.
             </p>
             <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
-              More than just a run, this event is an opportunity to embrace a healthier lifestyle while running for a cause greater than yourself—the glory of India. Whether you're a beginner taking your first steps or an experienced runner pursuing a new milestone, every kilometer completed reflects dedication, perseverance, and pride. Join runners from across the country and be part of a movement that celebrates fitness, achievement, and the spirit of the nation.
+              More than just a run, this event is an opportunity to embrace a healthier lifestyle while running for a cause greater than yourself-the glory of India. Whether you're a beginner taking your first steps or an experienced runner pursuing a new milestone, every kilometer completed reflects dedication, perseverance, and pride. Join runners from across the country and be part of a movement that celebrates fitness, achievement, and the spirit of the nation.
             </p>
           </div>
 
@@ -393,7 +414,7 @@ export default function EventDetails() {
             <div className="space-y-2">
               <h3 className="font-display font-bold text-sm uppercase tracking-wider text-slate-400">Registration fees</h3>
               <div className="flex items-center justify-center space-x-3">
-                <span className="font-display font-black text-4xl text-primary-navy dark:text-white">₹399</span>
+                <span className="font-display font-black text-4xl text-primary-navy dark:text-white">₹499</span>
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400 font-light">All-inclusive registration price. No hidden shipping charges.</p>
             </div>
@@ -413,13 +434,20 @@ export default function EventDetails() {
               </div>
             </div>
 
-            <button 
-              onClick={() => navigate('/register')}
-              className="w-full font-display font-bold uppercase tracking-wider py-4 rounded-xl bg-gradient-to-r
-               from-accent-gold to-yellow-600 hover:from-yellow-400 hover:to-accent-gold text-primary-navy shadow-lg shadow-yellow-500/20 cursor-pointer"
+            <button
+              className="w-full font-display font-bold uppercase tracking-wider py-4 rounded-xl bg-gradient-to-r from-red-700 to-gray-800 text-white cursor-default"
             >
-              Register Now (₹399)
+              Registrations are closed
             </button>
+            {submissionOpen && (
+              <button
+                onClick={() => navigate('/submit-record')}
+                className="w-full font-display font-bold uppercase tracking-wider py-4 rounded-xl bg-accent-gold hover:bg-yellow-400 text-[#040D1D] transition-colors duration-300 cursor-pointer flex items-center justify-center gap-2"
+              >
+                <Trophy className="h-5 w-5" />
+                Submit Your Record
+              </button>
+            )}
           </div>
 
           {/* Quick Help box */}
@@ -446,7 +474,7 @@ export default function EventDetails() {
               Trophy & Certificate Showcase
             </h2>
             <p className="text-slate-500 dark:text-slate-400 max-w-2xl mx-auto text-sm sm:text-base">
-              Take a closer look at the exclusive premium rewards included with your ₹399 registration fee.
+              Take a closer look at the exclusive premium rewards included with your ₹499 registration fee.
             </p>
           </div>
 
@@ -509,13 +537,13 @@ export default function EventDetails() {
       {/* 4. Bottom CTAs */}
       <div className="text-center pt-4 space-y-4">
         <h3 className="font-display font-bold text-xl text-primary-navy dark:text-white">
-          Join the Virtual Challenge Today for ₹399
+          Join the Virtual Challenge Today for ₹499
         </h3>
         <button 
-          onClick={() => navigate('/register')}
-          className="font-display font-bold uppercase tracking-wider px-12 py-4 rounded-xl bg-gradient-to-r from-accent-gold to-yellow-600 hover:from-yellow-400 hover:to-accent-gold text-primary-navy shadow-lg shadow-yellow-500/20 transform hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
+          // onClick={() => navigate('/register')}
+          className="font-display font-bold uppercase tracking-wider px-12 py-4 rounded-xl bg-gradient-to-r from-red-700 to-gray-800  text-white transform hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
         >
-          Register Now - ₹399
+          Registerations are closed
         </button>
       </div>
 

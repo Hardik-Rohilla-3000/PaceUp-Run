@@ -20,7 +20,7 @@ export default function TermsAndConditions() {
           <div className="space-y-6 mt-6">
             <section>
               <h3 className="font-display font-bold text-lg text-primary-navy dark:text-white mb-2">Registration Fee</h3>
-              <p>The challenge entry fee of ₹399 is inclusive of taxes, trophy engraving, e-certificate generation, and delivery across India. Once paid, the fee is non-refundable.</p>
+              <p>The challenge entry fee of ₹499 is inclusive of taxes, trophy engraving, e-certificate generation, and delivery across India. Once paid, the fee is non-refundable.</p>
             </section>
 
             <section>

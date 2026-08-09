@@ -385,7 +385,7 @@
 //           {/* Package Inclusions Box */}
 //           <div className="bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl space-y-4">
 //             <h3 className="font-display font-bold text-base text-primary-navy dark:text-white">
-//               ₹399 Package Inclusions
+//               ₹499 Package Inclusions
 //             </h3>
             
 //             <div className="space-y-3 text-xs text-slate-650 dark:text-slate-350">
@@ -409,7 +409,7 @@
             
 //             <div className="border-t border-slate-200 dark:border-slate-800 pt-3 flex justify-between items-center text-xs">
 //               <span className="text-slate-400">Total Price:</span>
-//               <span className="font-display font-black text-lg text-primary-navy dark:text-white">₹399.00</span>
+//               <span className="font-display font-black text-lg text-primary-navy dark:text-white">₹499.00</span>
 //             </div>
 //           </div>
 
@@ -455,20 +455,20 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Mail, Phone, MapPin, CheckCircle2, ChevronRight, Award, Trophy, Loader2 } from 'lucide-react';
+import { User, Mail, Phone, MapPin, CheckCircle2, ChevronRight, Award, Trophy, Loader2, XCircle } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
-// CHANGE LOG (this session — distance fix + full loophole audit)
+// CHANGE LOG (this session - distance fix + full loophole audit)
 // ---------------------------------------------------------------------------
 //
-// CHANGE 1 — VALID_DISTANCE_IDS constant (new, outside component)
+// CHANGE 1 - VALID_DISTANCE_IDS constant (new, outside component)
 //   WHY: The distances array only exists inside the component, recreated every
 //        render. Extracting the valid IDs as a module-level Set gives us a
 //        single source of truth we can use both in useState initialisation AND
-//        in validateForm() — without creating the array twice or risking
+//        in validateForm() - without creating the array twice or risking
 //        the two lists drifting out of sync.
 //
-// CHANGE 2 — useState initialisation changed from:
+// CHANGE 2 - useState initialisation changed from:
 //     useState(registerData.distance || '10K')
 //   to:
 //     useState(VALID_DISTANCE_IDS.has(registerData.distance) ? registerData.distance : null)
@@ -477,7 +477,7 @@ import { User, Mail, Phone, MapPin, CheckCircle2, ChevronRight, Award, Trophy, L
 //   a) '10K' (capital K) does not match any distances[].id ('10k', lowercase).
 //      The old default produced a truthy non-empty string that visually
 //      highlighted no card, yet made the `if (!distance)` check in
-//      validateForm() return true — so validation passed silently with an
+//      validateForm() return true - so validation passed silently with an
 //      invalid distance every single time.
 //   b) If a parent component passes a stale or malformed registerData.distance
 //      (e.g. from a previous session with different casing), the same bypass
@@ -485,17 +485,17 @@ import { User, Mail, Phone, MapPin, CheckCircle2, ChevronRight, Award, Trophy, L
 //      before accepting it closes that door too.
 //   RESULT: distance starts as null → no card highlighted → user must pick one.
 //
-// CHANGE 3 — validateForm() distance check changed from:
+// CHANGE 3 - validateForm() distance check changed from:
 //     if (!distance) { ... }
 //   to:
 //     if (!distance || !VALID_DISTANCE_IDS.has(distance)) { ... }
 //
 //   WHY: A falsy check alone only catches null/undefined/''. Any non-empty
-//        string — including the old default '10K', or any value injected via
-//        props — would pass. The Set membership check ensures the stored value
+//        string - including the old default '10K', or any value injected via
+//        props - would pass. The Set membership check ensures the stored value
 //        is actually one of the five known distance IDs and nothing else.
 //
-// LOOPHOLE AUDIT — all other fields (no changes needed, confirmed solid):
+// LOOPHOLE AUDIT - all other fields (no changes needed, confirmed solid):
 //   name    → trim() + empty check                     ✅
 //   email   → trim() + /\S+@\S+\.\S+/ regex           ✅
 //   phone   → trim() + /^[6-9]\d{9}$/ regex           ✅
@@ -506,13 +506,13 @@ import { User, Mail, Phone, MapPin, CheckCircle2, ChevronRight, Award, Trophy, L
 //   distance → was broken (see above), now fixed       ✅
 //
 // UI: Zero visual changes. The card highlight logic (isSelected = distance === dist.id)
-//     already works correctly — with distance=null, no card matches, so nothing
+//     already works correctly - with distance=null, no card matches, so nothing
 //     is highlighted until the user clicks. No JSX was modified.
 // ---------------------------------------------------------------------------
 
 
 // CHANGE 1: Module-level Set of all valid distance IDs.
-// Single source of truth — used in useState init AND validateForm().
+// Single source of truth - used in useState init AND validateForm().
 // Defined outside the component so it is never recreated on re-renders.
 const VALID_DISTANCE_IDS = new Set(['1600m', '3k', '5k', '10k', '21k']);
 
@@ -527,6 +527,7 @@ export default function Registration({ registerData, setRegisterData }) {
     !!new URLSearchParams(window.location.search).get('order_id')
   );
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [paymentFailed, setPaymentFailed]   = useState(false);
   const [paymentDetails, setPaymentDetails] = useState(null);
   const navigate = useNavigate();
 
@@ -555,16 +556,20 @@ export default function Registration({ registerData, setRegisterData }) {
           'apikey':        ANON_KEY,
           'Authorization': `Bearer ${ANON_KEY}`,
         },
-        body: JSON.stringify({ order_id: orderId, ...data }),
+        body: JSON.stringify({ order_id: orderId, ...data, address: [data.address_line1, data.address_line2, data.address_line3].filter(Boolean).join(', ') }),
       })
-        .then(r => r.json())
-        .then(json => {
-          setPaymentDetails(json);
-          setPaymentSuccess(true);
-          localStorage.removeItem('paceup_register_data');
+        .then(async r => {
+          const json = await r.json();
+          if (r.ok) {
+            setPaymentDetails(json);
+            setPaymentSuccess(true);
+            localStorage.removeItem('paceup_register_data');
+          } else {
+            setPaymentFailed(true);
+          }
           navigate('/register', { replace: true });
         })
-        .catch(() => alert('Payment received but verification failed. Contact support.'))
+        .catch(() => setPaymentFailed(true))
         .finally(() => setIsValidating(false));
     }
   }, []);
@@ -607,8 +612,8 @@ export default function Registration({ registerData, setRegisterData }) {
       tempErrors.phone = 'Please enter a valid 10-digit mobile number';
     }
 
-    if (!registerData.address?.trim())
-      tempErrors.address = 'Detailed shipping address is required for courier delivery';
+    if (!registerData.address_line1?.trim())
+      tempErrors.address_line1 = 'Address Line 1 is required for courier delivery';
 
     if (!registerData.city?.trim())
       tempErrors.city = 'City name is required';
@@ -622,7 +627,7 @@ export default function Registration({ registerData, setRegisterData }) {
       tempErrors.pincode = 'Please enter a valid 6-digit Pincode';
     }
 
-    // CHANGE 3: Dual guard — falsy check AND Set membership check.
+    // CHANGE 3: Dual guard - falsy check AND Set membership check.
     // A truthy-but-invalid string like '10K' passes `!distance` but fails
     // `!VALID_DISTANCE_IDS.has(distance)`, so it is correctly rejected.
     if (!distance || !VALID_DISTANCE_IDS.has(distance)) {
@@ -656,6 +661,11 @@ export default function Registration({ registerData, setRegisterData }) {
           customer_name:  finalData.name,
           customer_email: finalData.email,
           customer_phone: finalData.phone,
+          address:        [finalData.address_line1, finalData.address_line2, finalData.address_line3].filter(Boolean).join(', '),
+          city:           finalData.city,
+          state:          finalData.state,
+          pincode:        finalData.pincode,
+          distance:       finalData.distance,
         }),
       });
 
@@ -731,7 +741,7 @@ export default function Registration({ registerData, setRegisterData }) {
 
     ctx.fillStyle = slate;
     ctx.font = '13px system-ui, sans-serif';
-    ctx.fillText("Run for India's Glory 2026  —  Virtual Challenge", 40, 80);
+    ctx.fillText("Run for India's Glory 2026  -  Virtual Challenge", 40, 80);
 
     // Divider
     ctx.strokeStyle = panel;
@@ -764,8 +774,8 @@ export default function Registration({ registerData, setRegisterData }) {
     const labels = ['DISTANCE', 'PHONE', 'AMOUNT PAID', 'DATE'];
     const values = [
       (registerData.distance || '').toUpperCase(),
-      registerData.phone || '—',
-      '₹399.00',
+      registerData.phone || '-',
+      '₹499.00',
       new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
     ];
 
@@ -792,15 +802,15 @@ export default function Registration({ registerData, setRegisterData }) {
     ctx.fillText('PAYMENT ID', 470, 345);
 
     ctx.fillStyle = light; ctx.font = '12px monospace';
-    ctx.fillText(paymentDetails?.orderId || '—', 40, 363);
-    ctx.fillText(paymentDetails?.paymentId || '—', 470, 363);
+    ctx.fillText(paymentDetails?.orderId || '-', 40, 363);
+    ctx.fillText(paymentDetails?.paymentId || '-', 470, 363);
 
     // ── SHIPPING ──
     ctx.fillStyle = slate; ctx.font = '10px system-ui, sans-serif';
     ctx.fillText('SHIPPING TO', 40, 395);
 
     ctx.fillStyle = white; ctx.font = '13px system-ui, sans-serif';
-    const addr = `${registerData.address || ''}, ${registerData.city || ''}, ${registerData.state || ''} — ${registerData.pincode || ''}`;
+    const addr = `${registerData.address_line1 || ''}, ${registerData.address_line2 || ''}, ${registerData.address_line3 || ''}, ${registerData.city || ''}, ${registerData.state || ''} - ${registerData.pincode || ''}`;
     ctx.fillText(addr, 40, 413, W - 80);
 
     // ── FOOTER ──
@@ -838,6 +848,32 @@ export default function Registration({ registerData, setRegisterData }) {
     );
   }
 
+  if (paymentFailed) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-20 text-center space-y-6 animate-fade-in">
+        <div className="flex justify-center">
+          <XCircle className="h-20 w-20 text-red-500" />
+        </div>
+        <h1 className="font-display font-black text-3xl sm:text-4xl text-primary-navy dark:text-white">
+          Payment Failed
+        </h1>
+        <p className="text-slate-500 dark:text-slate-400 text-base">
+          Your payment was not completed or was cancelled. No amount has been deducted.
+        </p>
+        <button
+          onClick={() => { setPaymentFailed(false); localStorage.removeItem('paceup_register_data'); }}
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-accent-gold text-primary-navy font-bold text-sm hover:opacity-90 transition-opacity shadow-md"
+        >
+          Try Again
+        </button>
+        <p className="text-xs text-slate-400">
+          If money was deducted, contact us at{' '}
+          <a href="mailto:paceuprunofficial@gmail.com" className="underline">paceuprunofficial@gmail.com</a>
+        </p>
+      </div>
+    );
+  }
+
   if (paymentSuccess) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-20 text-center space-y-6 animate-fade-in">
@@ -867,7 +903,7 @@ export default function Registration({ registerData, setRegisterData }) {
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-slate-500 dark:text-slate-400">Amount Paid</span>
-            <span className="font-semibold text-green-600">₹399.00</span>
+            <span className="font-semibold text-green-600">₹499.00</span>
           </div>
         </div>
         <p className="text-xs text-slate-400">
@@ -1055,23 +1091,51 @@ export default function Registration({ registerData, setRegisterData }) {
 
             <div className="space-y-4">
               <div>
-                <label htmlFor="address" className="block text-xs font-bold uppercase tracking-wider text-slate-550 dark:text-slate-400 mb-2">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-550 dark:text-slate-400 mb-2">
                   Physical Address (House / Office / Area) *
                 </label>
-                <textarea
-                  id="address"
-                  name="address"
-                  value={registerData.address || ''}
-                  onChange={handleInputChange}
-                  placeholder="Enter full shipping address with street name and landmark"
-                  rows={3}
-                  className={`w-full p-4 rounded-xl border bg-slate-50 dark:bg-slate-850 dark:text-black transition-colors duration-200 outline-none text-sm resize-none ${
-                    errors.address
-                      ? 'border-red-500 dark:border-red-500'
-                      : 'border-slate-200 dark:border-slate-750 focus:border-primary-royal dark:focus:border-accent-gold'
-                  }`}
-                />
-                {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address}</p>}
+                <div className="space-y-2">
+                  <input
+                    type="text"
+                    name="address_line1"
+                    value={registerData.address_line1 || ''}
+                    onChange={handleInputChange}
+                    placeholder="Address Line 1 (House No, Building)"
+                    maxLength={30}
+                    className={`w-full px-4 py-3 rounded-xl border bg-slate-50 dark:bg-slate-850 dark:text-black transition-colors duration-200 outline-none text-sm ${
+                      errors.address_line1
+                        ? 'border-red-500 dark:border-red-500'
+                        : 'border-slate-200 dark:border-slate-750 focus:border-primary-royal dark:focus:border-accent-gold'
+                    }`}
+                  />
+                  <input
+                    type="text"
+                    name="address_line2"
+                    value={registerData.address_line2 || ''}
+                    onChange={handleInputChange}
+                    placeholder="Address Line 2 (Street, Area)"
+                    maxLength={30}
+                    className={`w-full px-4 py-3 rounded-xl border bg-slate-50 dark:bg-slate-850 dark:text-black transition-colors duration-200 outline-none text-sm ${
+                      errors.address_line2
+                        ? 'border-red-500 dark:border-red-500'
+                        : 'border-slate-200 dark:border-slate-750 focus:border-primary-royal dark:focus:border-accent-gold'
+                    }`}
+                  />
+                  <input
+                    type="text"
+                    name="address_line3"
+                    value={registerData.address_line3 || ''}
+                    onChange={handleInputChange}
+                    placeholder="Address Line 3 (Landmark)"
+                    maxLength={30}
+                    className={`w-full px-4 py-3 rounded-xl border bg-slate-50 dark:bg-slate-850 dark:text-black transition-colors duration-200 outline-none text-sm ${
+                      errors.address_line3
+                        ? 'border-red-500 dark:border-red-500'
+                        : 'border-slate-200 dark:border-slate-750 focus:border-primary-royal dark:focus:border-accent-gold'
+                    }`}
+                  />
+                </div>
+                {(errors.address_line1) && <p className="text-red-500 text-xs mt-1">{errors.address_line1}</p>}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -1136,13 +1200,13 @@ export default function Registration({ registerData, setRegisterData }) {
             </div>
           </div>
 
-          <div className="pt-4">
+          <div className="pt-4 flex gap-3">
             <button
               type="submit"
               disabled={isProcessing}
-              className="w-full font-display font-bold uppercase tracking-wider text-center 
+              className="flex-1 font-display font-bold uppercase tracking-wider text-center
               py-4 rounded-xl bg-gradient-to-r from-accent-gold to-yellow-600
-               hover:from-yellow-400 hover:to-accent-gold text-primary-navy 
+               hover:from-yellow-400 hover:to-accent-gold text-primary-navy
                shadow-lg shadow-yellow-500/20 transform hover:-translate-y-0.5
                 transition-all duration-200 flex items-center justify-center space-x-2
                 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
@@ -1154,20 +1218,68 @@ export default function Registration({ registerData, setRegisterData }) {
                 </>
               ) : (
                 <>
-                  <span>Proceed to Checkout (₹399)</span>
+                  <span>Proceed to Checkout (₹499)</span>
                   <ChevronRight className="h-5 w-5" />
                 </>
               )}
+            </button>
+
+            {/* DEV ONLY - skip payment, directly mark as paid */}
+            <button
+              type="button"
+              disabled={isProcessing}
+              onClick={async () => {
+                if (!validateForm()) return;
+                const finalData = { ...registerData, distance };
+                setRegisterData(finalData);
+                setIsProcessing(true);
+                try {
+                  const API_URL  = import.meta.env.VITE_API_URL;
+                  const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+                  const res = await fetch(`${API_URL}/dev-register`, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'apikey': ANON_KEY,
+                      'Authorization': `Bearer ${ANON_KEY}`,
+                    },
+                    body: JSON.stringify({
+                      customer_name:  finalData.name,
+                      customer_email: finalData.email,
+                      customer_phone: finalData.phone,
+                      address:        [finalData.address_line1, finalData.address_line2, finalData.address_line3].filter(Boolean).join(', '),
+                      city:           finalData.city,
+                      state:          finalData.state,
+                      pincode:        finalData.pincode,
+                      distance:       finalData.distance,
+                    }),
+                  });
+                  const data = await res.json();
+                  if (res.ok) {
+                    setPaymentDetails({ orderId: data.order_id, paymentId: 'DEV_SKIP' });
+                    setPaymentSuccess(true);
+                  } else {
+                    alert(data.error || 'Failed');
+                  }
+                } catch (err) {
+                  alert('Error: ' + err.message);
+                } finally {
+                  setIsProcessing(false);
+                }
+              }}
+              className="px-5 py-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider transition-colors disabled:opacity-60 shrink-0"
+            >
+              Jaldi yaha se hato
             </button>
           </div>
 
         </form>
 
-        {/* Right Info Sidebar — unchanged */}
+        {/* Right Info Sidebar - unchanged */}
         <div className="lg:col-span-4 space-y-6">
           <div className="bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl space-y-4">
             <h3 className="font-display font-bold text-base text-primary-navy dark:text-white">
-              ₹399 Package Inclusions
+              ₹499 Package Inclusions
             </h3>
 
             <div className="space-y-3 text-xs text-slate-650 dark:text-slate-350">
@@ -1191,7 +1303,7 @@ export default function Registration({ registerData, setRegisterData }) {
 
             <div className="border-t border-slate-200 dark:border-slate-800 pt-3 flex justify-between items-center text-xs">
               <span className="text-slate-400">Total Price:</span>
-              <span className="font-display font-black text-lg text-primary-navy dark:text-white">₹399.00</span>
+              <span className="font-display font-black text-lg text-primary-navy dark:text-white">₹499.00</span>
             </div>
           </div>
 
