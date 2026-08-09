@@ -329,9 +329,12 @@ export default function Event() {
 
               <div className="space-y-3 pt-4 border-t border-white/[0.06]">
                 <div className="flex flex-col sm:flex-row gap-3">
-                  <div className="flex-1 text-center py-3.5 rounded-xl bg-gradient-to-r from-red-700 to-gray-800">
-                    <span className="font-display font-bold text-sm uppercase tracking-wider text-white">Registrations are closed</span>
-                  </div>
+                  <button
+                    onClick={() => navigate('/register')}
+                    className="flex-1 font-display font-bold text-center uppercase tracking-wider py-3.5 rounded-xl bg-accent-gold hover:bg-yellow-400 text-[#040D1D] transition-colors duration-300 cursor-pointer"
+                  >
+                    Register for ₹499
+                  </button>
                   <button
                     onClick={() => navigate('/details')}
                     className="flex-1 font-display font-bold text-center uppercase tracking-wider py-3.5 rounded-xl border border-white/[0.1] hover:border-white/[0.2] text-white transition-colors duration-300 cursor-pointer"
