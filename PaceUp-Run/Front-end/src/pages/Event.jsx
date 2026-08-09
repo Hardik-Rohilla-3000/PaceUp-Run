@@ -36,17 +36,17 @@
 //       {/* Main Premium Event Card */}
 //       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 grid grid-cols-1 lg:grid-cols-12 max-w-5xl mx-auto">
         
-//         {/* Banner Column */}
+//         {/* main Column */}
 //         <div className="lg:col-span-5 relative min-h-[260px] lg:min-h-[460px] bg-slate-950">
 //           <img 
 //             src="/runner_hero.png" 
-//             alt="Virtual Run Challenge 2026 Banner" 
+//             alt="Virtual Run Challenge 2026 main" 
 //             className="w-full h-full object-cover opacity-60 absolute inset-0"
 //           />
 //           {/* Accent Gold overlay */}
 //           <div className="absolute inset-0 bg-gradient-to-t from-primary-navy via-transparent to-transparent lg:bg-gradient-to-r lg:from-transparent lg:to-primary-navy/40"></div>
           
-//           {/* Inside Banner Info overlays */}
+//           {/* Inside main Info overlays */}
 //           <div className="absolute top-4 left-4 bg-[#081B3A] border border-accent-gold/40 text-accent-gold text-xs font-display font-bold px-3 py-1 rounded-full uppercase">
 //             Popular Challenge
 //           </div>
@@ -206,10 +206,10 @@ export default function Event() {
   }, []);
 
   const activeEvent = {
-    title: 'Run for India\'s Glory 2026',
+    title: 'The Forever Athlete Run 2026',
     fee: '₹499',
-    timeline: '12 July 2026 - 18 July 2026',
-    registrationCloses: '11 July 2026 at 11:59 PM IST',
+    timeline: '31 August - 06 September 2026',
+    registrationCloses: '30 Augut 2026 at 11:59 PM IST',
     location: 'Run Anywhere (Self-Paced)',
     inclusions: [
       'Premium Theme-Based Acrylic Trophy',
@@ -232,11 +232,11 @@ export default function Event() {
   return (
     <div className="animate-fade-in">
 
-      {/* Hero Banner */}
+      {/* Hero main */}
       <div className="relative h-[320px] sm:h-[420px] overflow-hidden">
         <img
-          src="/banner.png"
-          alt="Run for India's Glory 2026"
+          src="/main.png"
+          alt="The Forever Athlete Run 2026"
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#040D1D] via-[#040D1D]/60 to-transparent" />
@@ -245,10 +245,10 @@ export default function Event() {
             Featured Challenge
           </span>
           <h1 className="font-display font-black text-3xl sm:text-5xl lg:text-6xl text-white leading-tight">
-            Run for India's Glory 2026
+           The Forever Athlete Run 2026
           </h1>
           <p className="text-white/50 max-w-xl mx-auto mt-3 text-sm sm:text-base">
-            A nationwide virtual running challenge celebrating endurance, fitness, and the spirit of India.
+            A nationwide virtual running challenge celebrating endurance, fitness, and the spirit of the athlete.
           </p>
         </div>
       </div>
@@ -258,7 +258,7 @@ export default function Event() {
         <div className="max-w-5xl mx-auto px-4 py-4 flex flex-wrap justify-center gap-6 sm:gap-10">
           <div className="flex items-center gap-2 text-white/50 text-xs sm:text-sm">
             <Calendar className="h-4 w-4 text-accent-gold" />
-            <span>12 - 18 July 2026</span>
+            <span>31st August - 6th September 2026</span>
           </div>
           <div className="flex items-center gap-2 text-white/50 text-xs sm:text-sm">
             <MapPin className="h-4 w-4 text-accent-gold" />
@@ -270,7 +270,7 @@ export default function Event() {
           </div>
           <div className="flex items-center gap-2 text-white/50 text-xs sm:text-sm">
             <Trophy className="h-4 w-4 text-accent-gold" />
-            <span>Trophy + Certificate</span>
+            <span>Trophy + Certificate + Stickers</span>
           </div>
         </div>
       </div>
@@ -286,7 +286,7 @@ export default function Event() {
             <div className="lg:col-span-5 relative min-h-[240px] lg:min-h-[420px]">
               <img
                 src="/event-card.png"
-                alt="Run for India's Glory Banner"
+                alt="Run for India's Glory main"
                 className="w-full h-full object-cover absolute inset-0"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#040D1D] via-transparent to-transparent lg:bg-gradient-to-r lg:from-transparent lg:to-[#040D1D]/50" />
@@ -365,7 +365,7 @@ export default function Event() {
             <div className="lg:col-span-5 relative min-h-[240px] lg:min-h-[420px]">
               <img
                 src="/event-card.png"
-                alt="Previous Event Banner"
+                alt="Previous Event main"
                 className="w-full h-full object-cover absolute inset-0 grayscale"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#040D1D] via-transparent to-transparent lg:bg-gradient-to-r lg:from-transparent lg:to-[#040D1D]/50" />
