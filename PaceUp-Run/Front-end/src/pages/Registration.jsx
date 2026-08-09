@@ -1224,53 +1224,6 @@ export default function Registration({ registerData, setRegisterData }) {
               )}
             </button>
 
-            {/* DEV ONLY - skip payment, directly mark as paid */}
-            <button
-              type="button"
-              disabled={isProcessing}
-              onClick={async () => {
-                if (!validateForm()) return;
-                const finalData = { ...registerData, distance };
-                setRegisterData(finalData);
-                setIsProcessing(true);
-                try {
-                  const API_URL  = import.meta.env.VITE_API_URL;
-                  const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-                  const res = await fetch(`${API_URL}/dev-register`, {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      'apikey': ANON_KEY,
-                      'Authorization': `Bearer ${ANON_KEY}`,
-                    },
-                    body: JSON.stringify({
-                      customer_name:  finalData.name,
-                      customer_email: finalData.email,
-                      customer_phone: finalData.phone,
-                      address:        [finalData.address_line1, finalData.address_line2, finalData.address_line3].filter(Boolean).join(', '),
-                      city:           finalData.city,
-                      state:          finalData.state,
-                      pincode:        finalData.pincode,
-                      distance:       finalData.distance,
-                    }),
-                  });
-                  const data = await res.json();
-                  if (res.ok) {
-                    setPaymentDetails({ orderId: data.order_id, paymentId: 'DEV_SKIP' });
-                    setPaymentSuccess(true);
-                  } else {
-                    alert(data.error || 'Failed');
-                  }
-                } catch (err) {
-                  alert('Error: ' + err.message);
-                } finally {
-                  setIsProcessing(false);
-                }
-              }}
-              className="px-5 py-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider transition-colors disabled:opacity-60 shrink-0"
-            >
-              Jaldi yaha se hato
-            </button>
           </div>
 
         </form>
