@@ -234,8 +234,6 @@ export default function AdminAccess() {
     setEmail(''); setPassword('');
   };
 
-  };
-
   const handleDeliveryUpdate = async (userId, newStatus) => {
     setUsers(prev => prev.map(u => u.id === userId ? { ...u, delivery_status: newStatus } : u));
     try {
