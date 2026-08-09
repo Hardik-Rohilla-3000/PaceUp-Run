@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
       .maybeSingle()
 
     if (existing && existing.payment_status === 'paid') {
-      // Already saved — just return success
+      // Already saved - just return success
       return new Response(JSON.stringify({
         msg:       'Payment verified',
         orderId:   order_id,
@@ -63,7 +63,7 @@ Deno.serve(async (req) => {
     }
 
     if (existing) {
-      // Row exists as pending — UPDATE to paid
+      // Row exists as pending - UPDATE to paid
       const { error } = await supabase
         .from('registrations')
         .update({
@@ -86,7 +86,7 @@ Deno.serve(async (req) => {
         })
       }
     } else {
-      // No pending row found — insert fresh (fallback)
+      // No pending row found - insert fresh (fallback)
       const { error } = await supabase.from('registrations').insert({
         name, email, phone, address, city, state, pincode, distance,
         cashfree_order_id: order_id,

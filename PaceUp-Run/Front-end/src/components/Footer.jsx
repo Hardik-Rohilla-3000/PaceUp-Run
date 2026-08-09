@@ -165,7 +165,7 @@
 //             <div className="space-y-4 text-sm text-slate-600 dark:text-slate-300 pr-2 leading-relaxed">
 //               <p className="font-semibold text-primary-navy dark:text-white">Please read the runner guidelines carefully before registering.</p>
 //               <ul className="list-disc pl-5 space-y-2">
-//                 <li><strong>Registration Fee:</strong> The challenge entry fee of ₹399 is inclusive of taxes, trophy engraving, e-certificate generation, and delivery across India. Once paid, the fee is non-refundable.</li>
+//                 <li><strong>Registration Fee:</strong> The challenge entry fee of ₹499 is inclusive of taxes, trophy engraving, e-certificate generation, and delivery across India. Once paid, the fee is non-refundable.</li>
 //                 <li><strong>Run Tracking:</strong> You can complete your run in a single session or multiple sessions using any GPS-enabled running application (e.g., Strava, Nike Run Club, Garmin, MapMyRun, Fitbit, Apple Health, Google Fit).</li>
 //                 <li><strong>Submission of Proof:</strong> A screenshot of your tracking dashboard showing elapsed time, date, and covered distance must be uploaded through our validation portal. Activity proof must be submitted within the 
 // dates specified by the organizers for the challenge.</li>
@@ -287,6 +287,7 @@ export default function Footer() {
               { label: 'about us', path: '/about-us' },
               { label: 'event', path: '/event' },
               { label: 'how it works', path: '/how-it-works' },
+              { label: 'gallery', path: '/gallery' },
               { label: 'faq', path: '/faq' },
             ].map((item) => (
               <li key={item.path}>

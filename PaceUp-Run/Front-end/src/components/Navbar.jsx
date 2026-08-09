@@ -12,6 +12,7 @@ export default function Navbar({ darkMode, setDarkMode }) {
     { id: 'home', label: 'Home', path: '/' },
     { id: 'event', label: 'Event', path: '/event' },
     { id: 'how-it-works', label: 'How It Works', path: '/how-it-works' },
+    { id: 'gallery', label: 'Gallery', path: '/gallery' },
     { id: 'faq', label: 'FAQ', path: '/faq' },
   ];
 

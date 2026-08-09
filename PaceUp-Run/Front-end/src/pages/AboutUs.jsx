@@ -22,7 +22,7 @@ export default function AboutUs() {
             Every event is designed to encourage personal growth while making fitness exciting. Participants receive a finisher certificate, exclusive rewards, and the satisfaction of accomplishing meaningful fitness goals.
           </p>
           <p>
-            At PaceUp Run, we believe that every step counts. Our mission is to create a platform where individuals across the country can embrace an active lifestyle, challenge themselves, and celebrate their journey—one step at a time.
+            At PaceUp Run, we believe that every step counts. Our mission is to create a platform where individuals across the country can embrace an active lifestyle, challenge themselves, and celebrate their journey-one step at a time.
           </p>
           
           <div className="pt-6 mt-6 border-t border-slate-200 dark:border-slate-700/50">

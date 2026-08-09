@@ -5,7 +5,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const REGISTRATION_FEE = 399.00 // ₹399.00
+const REGISTRATION_FEE = 499.00 // ₹499.00
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -57,7 +57,7 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Save as pending — fallback agar payment ke baad localStorage na mile
+    // Save as pending - fallback agar payment ke baad localStorage na mile
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL'),
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')

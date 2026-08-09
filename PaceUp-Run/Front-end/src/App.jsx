@@ -45,7 +45,7 @@
 
 //   return (
 //     <div className="flex flex-col min-h-screen font-sans bg-slate-50 text-slate-900 dark:bg-[#040D1D] dark:text-slate-100 transition-colors duration-300">
-//       {/* Navbar — reads active route via useLocation internally */}
+//       {/* Navbar - reads active route via useLocation internally */}
 //       <Navbar darkMode={darkMode} setDarkMode={setDarkMode} />
 
 //       {/* Main Content Area */}
@@ -195,8 +195,9 @@
 
 
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Routes, Route } from 'react-router-dom';
+import Lenis from 'lenis';
 
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -213,9 +214,11 @@ import AboutUs from './pages/AboutUs';
 import AdminAccess from './pages/AdminAccess';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsAndConditions from './pages/TermsAndConditions';
-import RefundPolicy from './pages/RefundPolicy'; // Added Refund Policy Import
+import RefundPolicy from './pages/RefundPolicy';
+import SubmitRecord from './pages/SubmitRecord';
+import Gallery from './pages/Gallery';
 
-// Payment import removed — Payment page has been removed from the app.
+// Payment import removed - Payment page has been removed from the app.
 // Re-add when Razorpay integration is ready:
 // import Payment from './pages/Payment';
 
@@ -226,12 +229,21 @@ export default function App() {
     name: '',
     email: '',
     phone: '',
-    address: '',
+    address_line1: '',
+    address_line2: '',
+    address_line3: '',
     city: '',
     state: '',
     pincode: '',
     distance: '10K',
   });
+
+  useEffect(() => {
+    const lenis = new Lenis({ duration: 1.2, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)) });
+    function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+    requestAnimationFrame(raf);
+    return () => lenis.destroy();
+  }, []);
 
   useEffect(() => {
     if (darkMode) {
@@ -276,12 +288,14 @@ export default function App() {
               }
             />
 
-            {/* Payment route removed — re-add when Razorpay integration is ready:
+            {/* Payment route removed - re-add when Razorpay integration is ready:
             <Route
               path="/payment"
               element={<Payment registerData={registerData} />}
             /> */}
 
+            <Route path="/gallery" element={<Gallery />} />
+            <Route path="/submit-record" element={<SubmitRecord />} />
             <Route path="/event/confidential/admin-access" element={<AdminAccess />} />
             <Route path="*" element={<Home />} />
           </Routes>

@@ -35,7 +35,7 @@
 //       id: 4,
 //       category: 'delivery',
 //       question: 'Is shipping free across India?',
-//       answer: 'Yes! Free shipping is included with your ₹399 entry fee. There are absolutely no hidden delivery costs, packing surcharges, or regional logistics fees. We ship to all valid pin codes across India through leading shipping partners like BlueDart, Delhivery, and DTDC.',
+//       answer: 'Yes! Free shipping is included with your ₹499 entry fee. There are absolutely no hidden delivery costs, packing surcharges, or regional logistics fees. We ship to all valid pin codes across India through leading shipping partners like BlueDart, Delhivery, and DTDC.',
 //     },
 //     {
 //       id: 5,
@@ -52,8 +52,8 @@
 //     // {
 //     //   id: 7,
 //     //   category: 'general',
-//     //   question: 'What is included in the ₹399 entry package?',
-//     //   answer: 'The ₹399 package is all-inclusive. It includes: (1) One customized 7-inch acrylic finisher trophy engraved with your name and run achievements, (2) One high-resolution downloadable digital e-certificate, and (3) Free delivery anywhere in India.',
+//     //   question: 'What is included in the ₹499 entry package?',
+//     //   answer: 'The ₹499 package is all-inclusive. It includes: (1) One customized 7-inch acrylic finisher trophy engraved with your name and run achievements, (2) One high-resolution downloadable digital e-certificate, and (3) Free delivery anywhere in India.',
 //     // },
 //   ];
 
@@ -224,7 +224,7 @@ export default function FAQ() {
       id: 4,
       category: 'delivery',
       question: 'Is shipping free across India?',
-      answer: 'Yes! Free shipping is included with your ₹399 entry fee. There are absolutely no hidden delivery costs, packing surcharges, or regional logistics fees. We ship to all valid pin codes across India through India Post.',
+      answer: 'Yes! Free shipping is included with your ₹499 entry fee. There are absolutely no hidden delivery costs, packing surcharges, or regional logistics fees. We ship to all valid pin codes across India through India Post.',
     },
     {
       id: 5,
