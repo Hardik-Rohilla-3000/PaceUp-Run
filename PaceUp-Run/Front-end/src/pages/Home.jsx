@@ -876,7 +876,7 @@ export default function Home({ registrationOpen = true }) {
 
             <motion.div variants={fadeUp} custom={2}>
               <div className="group h-full rounded-3xl overflow-hidden border border-slate-800 hover:border-purple-400/20 transition-all duration-500 bg-gradient-to-br from-[#0a1628] to-[#040D1D]">
-                <div className="relative aspect-[4/3] overflow-hidden">
+                <div className="relative aspect-square overflow-hidden">
                   <img src="/1000401733.png" alt="Sticker Pack" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                   <div className="absolute top-4 left-4">
                     <span className="px-3 py-1 rounded-full bg-purple-500/90 text-white text-[10px] font-bold uppercase tracking-wider">Exclusive</span>
