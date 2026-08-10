@@ -184,7 +184,7 @@ import { useNavigate } from 'react-router-dom';
 const API_URL  = import.meta.env.VITE_API_URL;
 const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-export default function Event() {
+export default function Event({ registrationOpen = true }) {
   const navigate = useNavigate();
   const [submissionOpen, setSubmissionOpen] = useState(false);
 
@@ -329,12 +329,18 @@ export default function Event() {
 
               <div className="space-y-3 pt-4 border-t border-white/[0.06]">
                 <div className="flex flex-col sm:flex-row gap-3">
-                  <button
-                    onClick={() => navigate('/register')}
-                    className="flex-1 font-display font-bold text-center uppercase tracking-wider py-3.5 rounded-xl bg-accent-gold hover:bg-yellow-400 text-[#040D1D] transition-colors duration-300 cursor-pointer"
-                  >
-                    Register for ₹499
-                  </button>
+                  {registrationOpen ? (
+                    <button
+                      onClick={() => navigate('/register')}
+                      className="flex-1 font-display font-bold text-center uppercase tracking-wider py-3.5 rounded-xl bg-accent-gold hover:bg-yellow-400 text-[#040D1D] transition-colors duration-300 cursor-pointer"
+                    >
+                      Register for ₹499
+                    </button>
+                  ) : (
+                    <div className="flex-1 text-center py-3.5 rounded-xl bg-gradient-to-r from-red-700 to-gray-800">
+                      <span className="font-display font-bold text-sm uppercase tracking-wider text-white">Registrations are closed</span>
+                    </div>
+                  )}
                   <button
                     onClick={() => navigate('/details')}
                     className="flex-1 font-display font-bold text-center uppercase tracking-wider py-3.5 rounded-xl border border-white/[0.1] hover:border-white/[0.2] text-white transition-colors duration-300 cursor-pointer"

@@ -224,6 +224,20 @@ import Gallery from './pages/Gallery';
 
 export default function App() {
   const [darkMode, setDarkMode] = useState(true);
+  const [registrationOpen, setRegistrationOpen] = useState(true);
+
+  useEffect(() => {
+    const API_URL  = import.meta.env.VITE_API_URL;
+    const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    fetch(`${API_URL}/get-settings`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': ANON_KEY, 'Authorization': `Bearer ${ANON_KEY}` },
+      body: JSON.stringify({}),
+    })
+      .then(r => r.json())
+      .then(data => { if (data.registration_open === 'false') setRegistrationOpen(false); })
+      .catch(() => {});
+  }, []);
 
   const [registerData, setRegisterData] = useState({
     name: '',
@@ -266,10 +280,10 @@ export default function App() {
 
         <main className="flex-grow">
           <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/event" element={<Event />} />
-            <Route path="/details" element={<EventDetails />} />
-            <Route path="/how-it-works" element={<HowItWorks />} />
+            <Route path="/" element={<Home registrationOpen={registrationOpen} />} />
+            <Route path="/event" element={<Event registrationOpen={registrationOpen} />} />
+            <Route path="/details" element={<EventDetails registrationOpen={registrationOpen} />} />
+            <Route path="/how-it-works" element={<HowItWorks registrationOpen={registrationOpen} />} />
             <Route path="/faq" element={<FAQ />} />
             
             {/* Dedicated Policy & Info Routes */}
@@ -284,6 +298,7 @@ export default function App() {
                 <Registration
                   registerData={registerData}
                   setRegisterData={setRegisterData}
+                  registrationOpen={registrationOpen}
                 />
               }
             />

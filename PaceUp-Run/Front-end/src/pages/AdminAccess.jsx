@@ -122,6 +122,8 @@ export default function AdminAccess() {
   const [proofImage, setProofImage] = useState(null);
   const [submissionOpen, setSubmissionOpen] = useState(false);
   const [togglingSubmission, setTogglingSubmission] = useState(false);
+  const [registrationOpen, setRegistrationOpen] = useState(false);
+  const [togglingRegistration, setTogglingRegistration] = useState(false);
 
   const callAdminData = (em, pw) =>
     fetch(`${API_URL}/admin-data`, {
@@ -148,6 +150,7 @@ export default function AdminAccess() {
       if (res.ok) {
         const data = await res.json();
         setSubmissionOpen(data.submission_open === 'true');
+        setRegistrationOpen(data.registration_open === 'true');
       }
     } catch { /* settings not critical */ }
   }, []);
@@ -166,6 +169,22 @@ export default function AdminAccess() {
       if (res.ok) setSubmissionOpen(!submissionOpen);
     } catch { /* ignore */ }
     setTogglingSubmission(false);
+  };
+
+  const toggleRegistration = async () => {
+    setTogglingRegistration(true);
+    const newValue = registrationOpen ? 'false' : 'true';
+    try {
+      const res = await fetch(`${API_URL}/toggle-setting`, {
+        method: 'POST', headers: apiHeaders(),
+        body: JSON.stringify({
+          email: credentials.email, password: credentials.password,
+          key: 'registration_open', value: newValue,
+        }),
+      });
+      if (res.ok) setRegistrationOpen(!registrationOpen);
+    } catch { /* ignore */ }
+    setTogglingRegistration(false);
   };
 
   // Restore session on mount
@@ -404,6 +423,21 @@ export default function AdminAccess() {
               <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white shadow transition-transform ${submissionOpen ? 'translate-x-4' : 'translate-x-0.5'}`} />
             </div>
             {togglingSubmission ? 'Saving…' : submissionOpen ? 'Submissions ON' : 'Submissions OFF'}
+          </button>
+          {/* Registration toggle */}
+          <button
+            onClick={toggleRegistration}
+            disabled={togglingRegistration}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
+              registrationOpen
+                ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+            }`}
+          >
+            <div className={`relative w-8 h-4 rounded-full transition-colors ${registrationOpen ? 'bg-green-500' : 'bg-red-400'}`}>
+              <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white shadow transition-transform ${registrationOpen ? 'translate-x-4' : 'translate-x-0.5'}`} />
+            </div>
+            {togglingRegistration ? 'Saving…' : registrationOpen ? 'Registration ON' : 'Registration OFF'}
           </button>
           <button onClick={handleLogout}
             className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-red-500 transition-colors"
