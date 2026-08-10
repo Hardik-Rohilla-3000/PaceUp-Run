@@ -490,8 +490,8 @@ export default function EventDetails({ registrationOpen = true }) {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+
             {/* Trophy Showcase Card */}
             <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-slate-800 space-y-6 shadow-md">
               <div className="relative group overflow-hidden rounded-2xl w-full h-[240px] sm:h-[300px] flex items-center justify-center bg-slate-50 dark:bg-[#040D1D]">
@@ -538,6 +538,30 @@ export default function EventDetails({ registrationOpen = true }) {
                 <ul className="grid grid-cols-2 gap-2 text-xs text-slate-500 dark:text-slate-450 pt-2 border-t border-slate-100 dark:border-slate-800">
                   <li>🖨️ Format: High-Res PDF</li>
                   <li>⚡ Delivery: Delivered via Email</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Sticker Pack Card */}
+            <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-slate-800 space-y-6 shadow-md">
+              <div className="relative group overflow-hidden rounded-2xl w-full h-[240px] sm:h-[300px] flex items-center justify-center bg-slate-50 dark:bg-[#040D1D]">
+                <img
+                  src="/1000401733.png"
+                  alt="Exclusive Sticker Pack"
+                  className="max-h-full max-w-full object-contain transform group-hover:scale-105 transition-all duration-300"
+                />
+              </div>
+              <div className="space-y-3">
+                <h3 className="font-display font-bold text-lg text-primary-navy dark:text-white flex items-center justify-between">
+                  <span>Sticker Pack</span>
+                  <span className="text-xs bg-purple-500/20 text-purple-500 px-2 py-0.5 rounded font-sans">Physical Reward</span>
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-505 dark:text-slate-400 leading-relaxed font-light">
+                  A set of exclusive PaceUp Run themed peel-and-stick stickers. Vibrant designs featuring running-inspired artwork. Stick them on your laptop, bottle, phone, or anywhere you like.
+                </p>
+                <ul className="grid grid-cols-2 gap-2 text-xs text-slate-500 dark:text-slate-450 pt-2 border-t border-slate-100 dark:border-slate-800">
+                  <li>🎨 Design: Running themed</li>
+                  <li>📦 Included: With trophy delivery</li>
                 </ul>
               </div>
             </div>

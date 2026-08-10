@@ -840,7 +840,7 @@ export default function Home({ registrationOpen = true }) {
           </motion.div>
 
           <motion.div
-            className="grid grid-cols-1 lg:grid-cols-2 gap-5"
+            className="grid grid-cols-1 md:grid-cols-3 gap-5"
             initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.1 }}
             variants={stagger}
           >
@@ -874,7 +874,22 @@ export default function Home({ registrationOpen = true }) {
               </div>
             </motion.div>
 
-            <motion.div variants={fadeUp} custom={2} className="lg:col-span-2">
+            <motion.div variants={fadeUp} custom={2}>
+              <div className="group h-full rounded-3xl overflow-hidden border border-slate-800 hover:border-purple-400/20 transition-all duration-500 bg-gradient-to-br from-[#0a1628] to-[#040D1D]">
+                <div className="relative aspect-[4/3] overflow-hidden">
+                  <img src="/1000401733.png" alt="Sticker Pack" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                  <div className="absolute top-4 left-4">
+                    <span className="px-3 py-1 rounded-full bg-purple-500/90 text-white text-[10px] font-bold uppercase tracking-wider">Exclusive</span>
+                  </div>
+                </div>
+                <div className="p-5">
+                  <h3 className="font-display font-bold text-lg text-white mb-1">Sticker Pack</h3>
+                  <p className="text-sm text-slate-400">Exclusive peel-and-stick running stickers. Stick them anywhere you want.</p>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div variants={fadeUp} custom={3} className="md:col-span-3">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                 <div className="group rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800 hover:border-rose-400/30 bg-white dark:bg-slate-900/80 p-6 transition-all duration-500">
                   <div className="w-12 h-12 rounded-2xl bg-rose-400/10 flex items-center justify-center text-rose-400 mb-4 group-hover:scale-110 transition-transform duration-300">
