@@ -175,7 +175,7 @@ function StepCard({ item, idx }) {
   );
 }
 
-export default function HowItWorks() {
+export default function HowItWorks({ registrationOpen = true }) {
   const navigate = useNavigate();
   const ctaRef = useReveal();
 
@@ -272,13 +272,19 @@ export default function HowItWorks() {
               Complete your run at your own pace - indoors or outdoors - and receive a premium acrylic trophy delivered to your doorstep for free.
             </p>
           </div>
-          <button
-            onClick={() => navigate('/register')}
-            className="shrink-0 group font-display font-bold uppercase tracking-wider px-8 py-3.5 rounded-xl bg-accent-gold hover:bg-yellow-400 text-[#040D1D] cursor-pointer transition-colors duration-300 flex items-center gap-2"
-          >
-            Register for ₹499
-            <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
-          </button>
+          {registrationOpen ? (
+            <button
+              onClick={() => navigate('/register')}
+              className="shrink-0 group font-display font-bold uppercase tracking-wider px-8 py-3.5 rounded-xl bg-accent-gold hover:bg-yellow-400 text-[#040D1D] cursor-pointer transition-colors duration-300 flex items-center gap-2"
+            >
+              Register for ₹499
+              <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+            </button>
+          ) : (
+            <div className="shrink-0 font-display font-bold uppercase tracking-wider px-8 py-3.5 rounded-xl bg-gradient-to-r from-red-700 to-gray-800 text-white text-sm">
+              Registrations are closed
+            </div>
+          )}
         </div>
       </div>
     </div>

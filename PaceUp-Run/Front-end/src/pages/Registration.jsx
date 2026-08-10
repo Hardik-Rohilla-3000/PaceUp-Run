@@ -455,7 +455,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Mail, Phone, MapPin, CheckCircle2, ChevronRight, Award, Trophy, Loader2, XCircle } from 'lucide-react';
+import { User, Mail, Phone, MapPin, CheckCircle2, ChevronRight, Award, Trophy, Loader2, XCircle, Lock } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
 // CHANGE LOG (this session - distance fix + full loophole audit)
@@ -517,7 +517,7 @@ import { User, Mail, Phone, MapPin, CheckCircle2, ChevronRight, Award, Trophy, L
 const VALID_DISTANCE_IDS = new Set(['1600m', '3k', '5k', '10k', '21k']);
 
 
-export default function Registration({ registerData, setRegisterData }) {
+export default function Registration({ registerData, setRegisterData, registrationOpen = true }) {
   const [errors, setErrors]             = useState({});
   const [distance, setDistance] = useState(
     VALID_DISTANCE_IDS.has(registerData.distance) ? registerData.distance : null
@@ -530,6 +530,23 @@ export default function Registration({ registerData, setRegisterData }) {
   const [paymentFailed, setPaymentFailed]   = useState(false);
   const [paymentDetails, setPaymentDetails] = useState(null);
   const navigate = useNavigate();
+
+  if (!registrationOpen && !isValidating) {
+    return (
+      <div className="min-h-[70vh] flex items-center justify-center px-4">
+        <div className="text-center space-y-4 max-w-md">
+          <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mx-auto">
+            <Lock className="h-8 w-8 text-red-500" />
+          </div>
+          <h1 className="font-display font-black text-2xl sm:text-3xl text-primary-navy dark:text-white">Registrations are Closed</h1>
+          <p className="text-slate-500 dark:text-slate-400 text-sm">Registrations for this event are currently closed. Follow us for updates on upcoming events.</p>
+          <button onClick={() => navigate('/')} className="font-display font-bold uppercase tracking-wider px-8 py-3 rounded-xl bg-accent-gold hover:bg-yellow-400 text-[#040D1D] transition-colors cursor-pointer">
+            Go to Home
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // On mount: check if returning from Cashfree redirect
   useEffect(() => {

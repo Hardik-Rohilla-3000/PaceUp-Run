@@ -572,7 +572,7 @@ function TestimonialsSection() {
 
 // ======== MAIN COMPONENT ========
 
-export default function Home() {
+export default function Home({ registrationOpen = true }) {
   const navigate = useNavigate();
   const heroRef = useRef(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
@@ -629,14 +629,20 @@ export default function Home() {
             </motion.p>
 
             <motion.div variants={fadeUp} custom={3} className="flex flex-wrap gap-3 pt-2">
-              <motion.button
-                onClick={() => navigate('/register')}
-                className="group font-display font-bold uppercase tracking-wider px-8 py-4 rounded-xl bg-accent-gold text-primary-navy cursor-pointer flex items-center gap-2"
-                whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
-              >
-                Register Now
-                <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-              </motion.button>
+              {registrationOpen ? (
+                <motion.button
+                  onClick={() => navigate('/register')}
+                  className="group font-display font-bold uppercase tracking-wider px-8 py-4 rounded-xl bg-accent-gold text-primary-navy cursor-pointer flex items-center gap-2"
+                  whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
+                >
+                  Register Now
+                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </motion.button>
+              ) : (
+                <div className="font-display font-bold uppercase tracking-wider px-8 py-4 rounded-xl bg-gradient-to-r from-red-700 to-gray-800 text-white text-sm">
+                  Registrations are closed
+                </div>
+              )}
               <motion.button
                 onClick={() => navigate('/event')}
                 className="font-display font-semibold px-8 py-4 rounded-xl text-white border border-white/20 hover:bg-white/10 transition-all cursor-pointer backdrop-blur-sm"
@@ -766,13 +772,19 @@ export default function Home() {
                 ))}
               </div>
 
-              <button
-                onClick={() => navigate('/register')}
-                className="mt-4 group font-display font-bold uppercase tracking-wider text-sm px-7 py-3 rounded-xl bg-accent-gold hover:bg-yellow-400 text-[#040D1D] cursor-pointer transition-colors duration-300 flex items-center gap-2 w-fit"
-              >
-                Earn Yours
-                <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
-              </button>
+              {registrationOpen ? (
+                <button
+                  onClick={() => navigate('/register')}
+                  className="mt-4 group font-display font-bold uppercase tracking-wider text-sm px-7 py-3 rounded-xl bg-accent-gold hover:bg-yellow-400 text-[#040D1D] cursor-pointer transition-colors duration-300 flex items-center gap-2 w-fit"
+                >
+                  Earn Yours
+                  <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+                </button>
+              ) : (
+                <div className="mt-4 font-display font-bold uppercase tracking-wider text-sm px-7 py-3 rounded-xl bg-gradient-to-r from-red-700 to-gray-800 text-white w-fit">
+                  Registrations are closed
+                </div>
+              )}
             </motion.div>
           </div>
         </div>
@@ -1063,14 +1075,20 @@ export default function Home() {
               </motion.h2>
 
               <motion.div variants={fadeUp} custom={1} className="flex flex-col sm:flex-row justify-center gap-3 pt-2">
-                <motion.button
-                  onClick={() => navigate('/register')}
-                  className="group font-display font-bold uppercase tracking-wider px-10 py-4 rounded-xl bg-accent-gold text-primary-navy cursor-pointer flex items-center justify-center gap-2"
-                  whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
-                >
-                  Register for ₹499
-                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                </motion.button>
+                {registrationOpen ? (
+                  <motion.button
+                    onClick={() => navigate('/register')}
+                    className="group font-display font-bold uppercase tracking-wider px-10 py-4 rounded-xl bg-accent-gold text-primary-navy cursor-pointer flex items-center justify-center gap-2"
+                    whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
+                  >
+                    Register for ₹499
+                    <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  </motion.button>
+                ) : (
+                  <div className="font-display font-bold uppercase tracking-wider px-10 py-4 rounded-xl bg-gradient-to-r from-red-700 to-gray-800 text-white text-sm flex items-center justify-center">
+                    Registrations are closed
+                  </div>
+                )}
                 <motion.button
                   onClick={() => navigate('/event')}
                   className="font-display font-semibold px-10 py-4 rounded-xl text-white border border-white/20 hover:bg-white/10 transition-all cursor-pointer"

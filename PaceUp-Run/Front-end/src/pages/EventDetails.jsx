@@ -278,7 +278,7 @@ import { useNavigate } from 'react-router-dom';
 const API_URL  = import.meta.env.VITE_API_URL;
 const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-export default function EventDetails() {
+export default function EventDetails({ registrationOpen = true }) {
   const navigate = useNavigate();
   const [submissionOpen, setSubmissionOpen] = useState(false);
 
@@ -438,13 +438,19 @@ export default function EventDetails() {
               </div>
             </div>
 
-             <button 
-              onClick={() => navigate('/register')}
-              className="w-full font-display font-bold uppercase tracking-wider py-4 rounded-xl bg-gradient-to-r
-               from-accent-gold to-yellow-600 hover:from-yellow-400 hover:to-accent-gold text-primary-navy shadow-lg shadow-yellow-500/20 cursor-pointer"
-            >
-              Register Now (₹499)
-            </button>
+            {registrationOpen ? (
+              <button
+                onClick={() => navigate('/register')}
+                className="w-full font-display font-bold uppercase tracking-wider py-4 rounded-xl bg-gradient-to-r
+                 from-accent-gold to-yellow-600 hover:from-yellow-400 hover:to-accent-gold text-primary-navy shadow-lg shadow-yellow-500/20 cursor-pointer"
+              >
+                Register Now (₹499)
+              </button>
+            ) : (
+              <button className="w-full font-display font-bold uppercase tracking-wider py-4 rounded-xl bg-gradient-to-r from-red-700 to-gray-800 text-white cursor-default">
+                Registrations are closed
+              </button>
+            )}
             {submissionOpen && (
               <button
                 onClick={() => navigate('/submit-record')}
@@ -545,13 +551,19 @@ export default function EventDetails() {
         <h3 className="font-display font-bold text-xl text-primary-navy dark:text-white">
           Join the Virtual Challenge Today for ₹499
         </h3>
-        <button 
-          onClick={() => navigate('/register')}
-          className="font-display font-bold uppercase tracking-wider px-12 py-4 rounded-xl bg-gradient-to-r
-               from-accent-gold to-yellow-600 hover:from-yellow-400 hover:to-accent-gold text-primary-navy shadow-lg shadow-yellow-500/20 transition-all duration-200 cursor-pointer"
-        >
-          Register Now (₹499)
-        </button>
+        {registrationOpen ? (
+          <button
+            onClick={() => navigate('/register')}
+            className="font-display font-bold uppercase tracking-wider px-12 py-4 rounded-xl bg-gradient-to-r
+                 from-accent-gold to-yellow-600 hover:from-yellow-400 hover:to-accent-gold text-primary-navy shadow-lg shadow-yellow-500/20 transition-all duration-200 cursor-pointer"
+          >
+            Register Now (₹499)
+          </button>
+        ) : (
+          <button className="font-display font-bold uppercase tracking-wider px-12 py-4 rounded-xl bg-gradient-to-r from-red-700 to-gray-800 text-white cursor-default">
+            Registrations are closed
+          </button>
+        )}
       </div>
 
     </div>
