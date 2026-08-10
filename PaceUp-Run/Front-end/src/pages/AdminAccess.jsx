@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  Shield, Lock, Loader2, Mail, LogOut,
+  Shield, Lock, Loader2, Mail, LogOut, Trash2,
   LayoutList, LayoutDashboard, ImageIcon,
   ArrowUpDown, ArrowUp, ArrowDown, Download,
   ExternalLink, ChevronDown, Package, Truck, CheckCircle2, Clock,
@@ -124,6 +124,8 @@ export default function AdminAccess() {
   const [togglingSubmission, setTogglingSubmission] = useState(false);
   const [registrationOpen, setRegistrationOpen] = useState(false);
   const [togglingRegistration, setTogglingRegistration] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const callAdminData = (em, pw) =>
     fetch(`${API_URL}/admin-data`, {
@@ -253,6 +255,26 @@ export default function AdminAccess() {
     setEmail(''); setPassword('');
   };
 
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      const res = await fetch(`${API_URL}/admin-delete`, {
+        method: 'POST', headers: apiHeaders(),
+        body: JSON.stringify({ email: credentials.email, password: credentials.password, id: deleteTarget.id }),
+      });
+      if (res.ok) {
+        setUsers(prev => prev.filter(u => u.id !== deleteTarget.id));
+        setDeleteTarget(null);
+      } else {
+        alert('Delete failed. Try again.');
+      }
+    } catch {
+      alert('Something went wrong.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const handleDeliveryUpdate = async (userId, newStatus) => {
     setUsers(prev => prev.map(u => u.id === userId ? { ...u, delivery_status: newStatus } : u));
     try {
@@ -378,6 +400,39 @@ export default function AdminAccess() {
   const oldPaid = paid.filter(u => new Date(u.created_at) < SEASON1_CUTOFF);
 
 
+  // Delete confirmation modal
+  const confirmModal = deleteTarget && (
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 w-full max-w-sm shadow-2xl space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center shrink-0">
+            <Trash2 className="h-5 w-5 text-red-500" />
+          </div>
+          <div>
+            <p className="font-bold text-sm text-primary-navy dark:text-white">Delete Registration?</p>
+            <p className="text-xs text-slate-400 mt-0.5">{deleteTarget.name}</p>
+          </div>
+        </div>
+        <p className="text-xs text-slate-500 dark:text-slate-400">
+          Yeh action undo nahi hoga. Database se permanently delete ho jayega.
+        </p>
+        <div className="flex gap-3 pt-1">
+          <button onClick={() => setDeleteTarget(null)} disabled={isDeleting}
+            className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
+          >
+            Cancel
+          </button>
+          <button onClick={handleDelete} disabled={isDeleting}
+            className="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-bold transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+          >
+            {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+            {isDeleting ? 'Deleting…' : 'Delete'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
   // Proof image lightbox
   const imageLightbox = proofImage && (
     <div
@@ -396,6 +451,7 @@ export default function AdminAccess() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-10 space-y-6">
+      {confirmModal}
       {imageLightbox}
 
       {/* Header */}
@@ -478,7 +534,7 @@ export default function AdminAccess() {
             {newPaid.length === 0
               ? <EmptyState msg="No new registrations yet." />
               : newPaid.map((u, i) => (
-                  <UserCard key={u.id} user={u} index={i} />
+                  <UserCard key={u.id} user={u} index={i} onDelete={() => setDeleteTarget(u)} />
                 ))
             }
           </Section>
@@ -493,7 +549,7 @@ export default function AdminAccess() {
             {pending.length === 0
               ? <EmptyState msg="No pending payments." />
               : pending.map((u, i) => (
-                  <UserCard key={u.id} user={u} index={i} isDraft />
+                  <UserCard key={u.id} user={u} index={i} isDraft onDelete={() => setDeleteTarget(u)} />
                 ))
             }
           </Section>
@@ -518,7 +574,7 @@ export default function AdminAccess() {
                 dotColor="bg-slate-400"
               >
                 {oldPaid.map((u, i) => (
-                  <UserCard key={u.id} user={u} index={i} />
+                  <UserCard key={u.id} user={u} index={i} onDelete={() => setDeleteTarget(u)} />
                 ))}
               </Section>
             </>
@@ -593,7 +649,8 @@ export default function AdminAccess() {
                     onDeliveryChange={handleDeliveryUpdate}
                     onTrackingChange={handleTrackingUpdate}
                     onTrackingSave={saveTrackingId}
-                                       onViewImage={(url) => setProofImage(url)}
+                    onViewImage={(url) => setProofImage(url)}
+                    onDelete={() => setDeleteTarget(u)}
                   />
                 );
               })}
@@ -632,7 +689,8 @@ export default function AdminAccess() {
                     onDeliveryChange={handleDeliveryUpdate}
                     onTrackingChange={handleTrackingUpdate}
                     onTrackingSave={saveTrackingId}
-                                       onViewImage={(url) => setProofImage(url)}
+                    onViewImage={(url) => setProofImage(url)}
+                    onDelete={() => setDeleteTarget(u)}
                   />
                 );
               })}
@@ -722,7 +780,7 @@ function EmptyState({ msg }) {
 }
 
 // ─── Registration card (Registrations tab) ───
-function UserCard({ user, index, isDraft = false }) {
+function UserCard({ user, index, isDraft = false, onDelete }) {
   const registeredAt = user.created_at
     ? new Date(user.created_at).toLocaleString('en-IN', {
         day: '2-digit', month: 'short', year: 'numeric',
@@ -753,6 +811,11 @@ function UserCard({ user, index, isDraft = false }) {
           }`}>
             {user.payment_status === 'paid' ? 'Paid' : 'Pending'}
           </span>
+          {onDelete && (
+            <button onClick={onDelete} className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-400 hover:text-red-500 transition-colors" title="Delete">
+              <Trash2 className="h-4 w-4" />
+            </button>
+          )}
         </div>
       </div>
       <div className="px-5 py-4 grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-4">
@@ -774,7 +837,7 @@ function UserCard({ user, index, isDraft = false }) {
 }
 
 // ─── Compact dashboard row (Registrations tab) ───
-function DashboardRow({ user, index, proof, onDeliveryChange, onTrackingChange, onTrackingSave, onViewImage }) {
+function DashboardRow({ user, index, proof, onDeliveryChange, onTrackingChange, onTrackingSave, onViewImage, onDelete }) {
   const registeredAt = user.created_at
     ? new Date(user.created_at).toLocaleString('en-IN', {
         day: '2-digit', month: 'short', year: 'numeric',
@@ -859,6 +922,11 @@ function DashboardRow({ user, index, proof, onDeliveryChange, onTrackingChange, 
               </select>
               <ChevronDown className="absolute right-1.5 top-1.5 h-3 w-3 pointer-events-none opacity-60" />
             </div>
+            {onDelete && (
+              <button onClick={onDelete} className="p-1 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-400 hover:text-red-500 transition-colors" title="Delete">
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            )}
           </div>
         </div>
       </div>
