@@ -22,7 +22,7 @@
 //   return (
 //     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16 animate-fade-in text-left">
       
-//       {/* 1. Page Header & Large Banner */}
+//       {/* 1. Page Header & Large main */}
 //       <div className="space-y-6">
 //         <button 
 //           onClick={() => setPage('event')}
@@ -34,7 +34,7 @@
 //         <div className="relative rounded-3xl overflow-hidden h-[250px] sm:h-[400px] bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-lg">
 //           <img 
 //             src="/runner_hero.png" 
-//             alt="Virtual Run Challenge 2026 Detailed Banner" 
+//             alt="Virtual Run Challenge 2026 Detailed main" 
 //             className="w-full h-full object-cover opacity-50"
 //           />
 //           <div className="absolute inset-0 bg-gradient-to-t from-primary-navy via-primary-navy/40 to-transparent"></div>
@@ -272,7 +272,7 @@
 
 
 import React, { useState, useEffect } from 'react';
-import { Calendar, Shield, Award, Trophy, MapPin, Truck, ChevronRight, FileText, CheckCircle2, Info } from 'lucide-react';
+import { Calendar, Shield, Award, Trophy, MapPin, Truck, ChevronRight, FileText, CheckCircle2, Sticker, Info } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const API_URL  = import.meta.env.VITE_API_URL;
@@ -317,7 +317,7 @@ export default function EventDetails() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16 animate-fade-in text-left">
       
-      {/* 1. Page Header & Large Banner */}
+      {/* 1. Page Header & Large main */}
       <div className="space-y-6">
         <button 
           onClick={() => navigate('/event')}
@@ -328,8 +328,8 @@ export default function EventDetails() {
 
         <div className="relative rounded-3xl overflow-hidden h-[250px] sm:h-[400px] bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-lg">
           <img 
-            src="/banner.png" 
-            alt="Virtual Run Challenge 2026 Detailed Banner" 
+            src="/main.png" 
+            alt="Virtual Run Challenge 2026 Detailed main" 
             className="w-full h-full object-cover opacity-50"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-primary-navy via-primary-navy/40 to-transparent"></div>
@@ -339,10 +339,10 @@ export default function EventDetails() {
               Event Details
             </span>
             <h1 className="font-display font-black text-3xl sm:text-5xl tracking-tight text-white leading-tight">
-              Run for India's Glory 2026
+              The Forever Athlete Run 2026
             </h1>
             <p className="text-slate-350 text-xs sm:text-sm max-w-2xl font-light">
-              A nationwide virtual running challenge that brings together people to celebrate endurance, fitness, and health.
+             A nationwide virtual running challenge celebrating endurance, fitness, and the spirit of the athlete.
             </p>
           </div>
         </div>
@@ -360,10 +360,10 @@ export default function EventDetails() {
               Challenge Description
             </h2>
             <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
-              Run for India's Glory 2026 is a nationwide virtual running challenge that brings together fitness enthusiasts, passionate runners, and proud citizens in a celebration of endurance, determination, and national spirit. Designed for participants of all fitness levels, the event offers multiple distance categories including 1600m, 3K, 5K, 10K, and 21K, allowing everyone to take part and challenge themselves.
+              Forever Athlete Run 2026 is a nationwide virtual running challenge that brings together fitness enthusiasts, passionate runners, and athletes of all levels in a celebration of endurance, determination, and an active lifestyle. Designed for participants of all fitness levels, the event offers multiple distance categories including 1600m, 3K, 5K, 10K, and 21K, allowing everyone to take part and challenge themselves.
             </p>
             <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
-              More than just a run, this event is an opportunity to embrace a healthier lifestyle while running for a cause greater than yourself-the glory of India. Whether you're a beginner taking your first steps or an experienced runner pursuing a new milestone, every kilometer completed reflects dedication, perseverance, and pride. Join runners from across the country and be part of a movement that celebrates fitness, achievement, and the spirit of the nation.
+              More than just a run, this event is an opportunity to embrace a healthier lifestyle and celebrate the athlete within you. Whether you're a beginner taking your first steps or an experienced runner pursuing a new milestone, every kilometer completed reflects dedication, perseverance, and the mindset of a forever athlete. Join runners from across the country and be part of a movement that celebrates fitness, achievement, consistency, and the passion to keep moving forward.
             </p>
           </div>
 
@@ -428,16 +428,22 @@ export default function EventDetails() {
                 <Award className="h-4 w-4 text-primary-blue" />
                 <span>E-Certificate included</span>
               </div>
+               <div className="flex items-center space-x-2">
+    <Sticker className="h-4 w-4 text-purple-500" />
+    <span>Exclusive Stickers included</span>
+  </div>
               <div className="flex items-center space-x-2">
                 <Truck className="h-4 w-4 text-green-500" />
                 <span>Free delivery across India</span>
               </div>
             </div>
 
-            <button
-              className="w-full font-display font-bold uppercase tracking-wider py-4 rounded-xl bg-gradient-to-r from-red-700 to-gray-800 text-white cursor-default"
+             <button 
+              onClick={() => navigate('/register')}
+              className="w-full font-display font-bold uppercase tracking-wider py-4 rounded-xl bg-gradient-to-r
+               from-accent-gold to-yellow-600 hover:from-yellow-400 hover:to-accent-gold text-primary-navy shadow-lg shadow-yellow-500/20 cursor-pointer"
             >
-              Registrations are closed
+              Register Now (₹499)
             </button>
             {submissionOpen && (
               <button
@@ -540,10 +546,11 @@ export default function EventDetails() {
           Join the Virtual Challenge Today for ₹499
         </h3>
         <button 
-          // onClick={() => navigate('/register')}
-          className="font-display font-bold uppercase tracking-wider px-12 py-4 rounded-xl bg-gradient-to-r from-red-700 to-gray-800  text-white transform hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
+          onClick={() => navigate('/register')}
+          className="font-display font-bold uppercase tracking-wider px-12 py-4 rounded-xl bg-gradient-to-r
+               from-accent-gold to-yellow-600 hover:from-yellow-400 hover:to-accent-gold text-primary-navy shadow-lg shadow-yellow-500/20 transition-all duration-200 cursor-pointer"
         >
-          Registerations are closed
+          Register Now (₹499)
         </button>
       </div>
 
