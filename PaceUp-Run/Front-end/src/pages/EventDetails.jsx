@@ -544,11 +544,11 @@ export default function EventDetails({ registrationOpen = true }) {
 
             {/* Sticker Pack Card */}
             <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-slate-800 space-y-6 shadow-md">
-              <div className="relative group overflow-hidden rounded-2xl w-full h-[240px] sm:h-[300px] flex items-center justify-center bg-slate-50 dark:bg-[#040D1D]">
+              <div className="relative group overflow-hidden rounded-2xl aspect-square flex items-center justify-center bg-slate-50 dark:bg-[#040D1D]">
                 <img
                   src="/1000401733.png"
                   alt="Exclusive Sticker Pack"
-                  className="max-h-full max-w-full object-contain transform group-hover:scale-105 transition-all duration-300"
+                  className="w-full h-full object-cover transform group-hover:scale-105 transition-all duration-300"
                 />
               </div>
               <div className="space-y-3">
