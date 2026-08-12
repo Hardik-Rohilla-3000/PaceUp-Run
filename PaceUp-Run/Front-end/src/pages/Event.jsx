@@ -208,12 +208,13 @@ export default function Event({ registrationOpen = true }) {
   const activeEvent = {
     title: 'The Forever Athlete Run 2026',
     fee: '₹499',
-    timeline: '31 August - 06 September 2026',
-    registrationCloses: '30 Augut 2026 at 11:59 PM IST',
+    timeline: '04 September - 10 September 2026',
+    registrationCloses: '3 september 2026 at 11:59 PM IST',
     location: 'Run Anywhere (Self-Paced)',
     inclusions: [
       'Premium Theme-Based Acrylic Trophy',
       'Downloadable High-Res Digital Finisher Certificate',
+      'Free premium theme based stickers',
       'Free Shipping and Tracking Across India',
       'Proud Finisher Recognition',
     ],

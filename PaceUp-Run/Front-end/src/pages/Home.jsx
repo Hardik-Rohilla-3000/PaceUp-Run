@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { 
   Trophy, Award, MapPin, Truck, ArrowRight, Timer, Users, Flag, 
   Footprints, Smartphone, Camera, Package, CheckCircle, Calendar, 
-  Clock, Globe, ChevronDown, Shield, Star 
+  Clock, Globe, ChevronDown, Tags, Shield, Star 
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion, useScroll, useTransform, useInView, animate, AnimatePresence } from 'framer-motion';
@@ -609,7 +609,7 @@ export default function Home({ registrationOpen = true }) {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-green-400" />
                 </span>
-                <span className="text-[11px] font-semibold tracking-widest uppercase text-slate-300">Registration Open</span>
+                <span className="text-[11px] font-semibold tracking-widest uppercase text-slate-300">The Trophy Just Got an Update</span>
               </div>
             </motion.div>
 
@@ -657,6 +657,7 @@ export default function Home({ registrationOpen = true }) {
                 { icon: <Trophy className="h-3.5 w-3.5" />, t: 'Trophy' },
                 { icon: <Award className="h-3.5 w-3.5" />, t: 'Certificate' },
                 { icon: <Truck className="h-3.5 w-3.5" />, t: 'Free Delivery' },
+                { icon: <Tags className="h-3.5 w-3.5" />, t: 'Stickers' },
               ].map((p, i) => (
                 <span key={i} className="flex items-center gap-1.5 text-xs text-slate-500">
                   <span className="text-accent-gold">{p.icon}</span>{p.t}
@@ -694,7 +695,7 @@ export default function Home({ registrationOpen = true }) {
             {[
               { value: 500, suffix: '+', label: 'Runners', icon: <Users className="h-5 w-5" /> },
               { value: 100, suffix: '+', label: 'Cities', icon: <MapPin className="h-5 w-5" /> },
-              { value: 2, suffix: '+', label: 'Years', icon: <Flag className="h-5 w-5" /> },
+              { value: 2, suffix: '+', label: 'Events', icon: <Flag className="h-5 w-5" /> },
               { value: 100, suffix: '%', label: 'Free Delivery', icon: <Truck className="h-5 w-5" /> },
             ].map((s, i) => (
               <motion.div key={i} variants={scaleUp} custom={i}
@@ -764,6 +765,7 @@ export default function Home({ registrationOpen = true }) {
                   { icon: <Star className="w-4 h-4 text-accent-gold" />, text: 'Theme-based design - new theme every season' },
                   { icon: <Shield className="w-4 h-4 text-accent-gold" />, text: 'Premium acrylic build with laser-cut finish' },
                   { icon: <Award className="w-4 h-4 text-accent-gold" />, text: 'Includes digital e-certificate' },
+                  { icon: <Tags className="w-4 h-4 text-accent-gold" />, text: 'Exclusive theme-based stickers included' },
                 ].map((item, i) => (
                   <div key={i} className="flex items-center gap-3 text-white/50 text-sm">
                     {item.icon}
@@ -1006,7 +1008,7 @@ export default function Home({ registrationOpen = true }) {
 
           <motion.div className="space-y-3" initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={stagger}>
             {[
-              { q: 'Can I complete my run in multiple days?', a: 'Yes! You can split your distance across multiple days. Just make sure to track each session and submit the total.' },
+              // { q: 'Can I complete my run in multiple days?', a: 'Yes! You can split your distance across multiple days. Just make sure to track each session and submit the total.' },
               { q: 'What running apps are accepted?', a: 'Any app that shows distance and time - Strava, Nike Run Club, Garmin, Fitbit, Apple Health, etc. Treadmill photos are also accepted.' },
               { q: 'When will I receive my trophy?', a: 'After your proof is verified, your trophy is dispatched within 5-7 working days. Free delivery anywhere in India.' },
               { q: 'Can I run on a treadmill?', a: 'Absolutely! Treadmill runs are fully accepted. Just take a clear photo of the treadmill screen showing distance and time.' },
@@ -1119,6 +1121,8 @@ export default function Home({ registrationOpen = true }) {
                 <span className="flex items-center gap-1.5"><Truck className="h-3.5 w-3.5 text-accent-gold" /> Free Shipping</span>
                 <span className="text-slate-700">|</span>
                 <span className="flex items-center gap-1.5"><Award className="h-3.5 w-3.5 text-accent-gold" /> Certificate</span>
+                <span className="text-slate-700">|</span>
+                 <span className="flex items-center gap-1.5"><Tags className="h-3.5 w-3.5 text-accent-gold" /> stickers</span>
               </motion.div>
             </div>
           </motion.div>
