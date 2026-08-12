@@ -370,7 +370,7 @@ export default function Event({ registrationOpen = true }) {
           <div className="bg-white/[0.02] border border-white/[0.07] rounded-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-12">
             <div className="lg:col-span-5 relative min-h-[240px] lg:min-h-[420px]">
               <img
-                src="/event-card.png"
+                src="/previous-event.png"
                 alt="Previous Event main"
                 className="w-full h-full object-cover absolute inset-0 grayscale"
               />
