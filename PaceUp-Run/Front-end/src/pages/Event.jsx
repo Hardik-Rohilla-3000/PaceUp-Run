@@ -381,9 +381,9 @@ export default function Event({ registrationOpen = true }) {
               <div className="space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/[0.06] pb-4">
                   <h2 className="font-display font-black text-2xl sm:text-3xl text-white">
-                    {activeEvent.title}
+                    Run For India's Glory 2026
                   </h2>
-                  <span className="font-display font-black text-2xl text-accent-gold">{activeEvent.fee}</span>
+                  <span className="font-display font-black text-2xl text-accent-gold">₹399</span>
                 </div>
 
                 <p className="text-white/40 text-sm leading-relaxed">{activeEvent.summary}</p>
@@ -391,11 +391,11 @@ export default function Event({ registrationOpen = true }) {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                   <div className="flex items-center gap-2 text-white/40 text-xs">
                     <Calendar className="h-4 w-4 text-red-400 shrink-0" />
-                    <span><strong className="text-white/60">Registration Closes:</strong> {activeEvent.registrationCloses}</span>
+                    <span><strong className="text-white/60">Registration Closes:</strong> 12 July 2026 at 11:59 PM IST</span>
                   </div>
                   <div className="flex items-center gap-2 text-white/40 text-xs">
                     <Calendar className="h-4 w-4 text-blue-400 shrink-0" />
-                    <span><strong className="text-white/60">Timeline:</strong> {activeEvent.timeline}</span>
+                    <span><strong className="text-white/60">Timeline:</strong> 12 July - 18 July 2026</span>
                   </div>
                 </div>
 
