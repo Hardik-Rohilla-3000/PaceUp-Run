@@ -1010,7 +1010,7 @@ export default function Home({ registrationOpen = true }) {
             {[
               // { q: 'Can I complete my run in multiple days?', a: 'Yes! You can split your distance across multiple days. Just make sure to track each session and submit the total.' },
               { q: 'What running apps are accepted?', a: 'Any app that shows distance and time - Strava, Nike Run Club, Garmin, Fitbit, Apple Health, etc. Treadmill photos are also accepted.' },
-              { q: 'When will I receive my trophy?', a: 'After your proof is verified, your trophy is dispatched within 5-7 working days. Free delivery anywhere in India.' },
+              { q: 'When will I receive my trophy?', a: 'After your proof is verified, your trophy is dispatched within 7-14 working days. Free delivery anywhere in India.' },
               { q: 'Can I run on a treadmill?', a: 'Absolutely! Treadmill runs are fully accepted. Just take a clear photo of the treadmill screen showing distance and time.' },
               { q: 'Is there an age limit?', a: 'No age limit! Runners of all ages and fitness levels are welcome to participate.' },
             ].map((faq, i) => (

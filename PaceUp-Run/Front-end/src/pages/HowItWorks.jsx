@@ -185,7 +185,7 @@ export default function HowItWorks({ registrationOpen = true }) {
       title: 'Register Online',
       icon: <ClipboardList className="h-5 w-5 text-white" />,
       ringColor: 'bg-blue-600',
-      desc: 'Fill out our secure registration form and sign up for the challenge. The fee is ₹499, which covers your theme-based trophy, digital certificate, and free delivery across India.',
+      desc: 'Fill out our secure registration form and sign up for the challenge. The fee is ₹499, which covers your theme-based trophy, digital certificate, sticker pack and free delivery across India.',
       tips: 'Ensure your spelling is correct! Your registered name will appear on your certificate and official challenge records.',
     },
     {
@@ -209,7 +209,7 @@ export default function HowItWorks({ registrationOpen = true }) {
       title: 'Receive Your Rewards',
       icon: <Award className="h-5 w-5 text-white" />,
       ringColor: 'bg-amber-500',
-      desc: 'Our team reviews your submission. Once verified, we prepare your theme-based trophy, e-certificate, and dispatch your trophy directly to your doorstep. Shipping is completely free!',
+      desc: 'Our team reviews your submission. Once verified, we prepare your theme-based trophy, e-certificate, sticker pack and dispatch your trophy directly to your doorstep. Shipping is completely free!',
       tips: 'You will receive a WhatsApp and email notification with a courier tracking ID as soon as your trophy leaves our workshop.',
     },
   ];

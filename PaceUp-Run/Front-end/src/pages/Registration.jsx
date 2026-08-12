@@ -1255,7 +1255,7 @@ export default function Registration({ registerData, setRegisterData, registrati
             <div className="space-y-3 text-xs text-slate-650 dark:text-slate-350">
               <div className="flex items-start space-x-2">
                 <CheckCircle2 className="h-4.5 w-4.5 text-green-500 shrink-0 mt-0.5" />
-                <span>Theme-Based Premium Trophy Crafted for Excellence.</span>
+                <span>Theme-Based Premium Trophy and Sticker Pack.</span>
               </div>
               <div className="flex items-start space-x-2">
                 <CheckCircle2 className="h-4.5 w-4.5 text-green-500 shrink-0 mt-0.5" />

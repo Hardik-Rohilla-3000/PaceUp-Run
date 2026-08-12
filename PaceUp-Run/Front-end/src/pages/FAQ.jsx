@@ -212,13 +212,13 @@ export default function FAQ() {
       id: 2,
       category: 'tracking',
       question: 'How do I submit proof of my run?',
-      answer: 'Submitting proof is extremely simple. Once you complete your run, take a screenshot of your activity details from your mobile GPS running application (or take a photo of the treadmill display screen). The dashboard screenshot must clearly show the date, completed distance, and duration. Send your challenge screenshot to our official email address (shared in your confirmation email) for verification.',
+      answer: 'Submitting proof is extremely simple. Once you complete your run, take a screenshot of your activity details from your mobile GPS running application (or take a photo of the treadmill display screen). The dashboard screenshot must clearly show the date, completed distance, and duration. Submit your challenge screenshot on our submission portal which will get activated when registrations are closed.',
     },
     {
       id: 3,
       category: 'delivery',
       question: 'When will I receive my physical acrylic trophy?',
-      answer: 'After the event concludes, all verified participants become eligible for the themed acrylic trophy and certificate. Trophies are carefully packed and dispatched within 7–8 days after the event ends. Once your order is shipped, you will receive a SMS notification containing your courier tracking details.',
+      answer: 'After the event concludes, all verified participants become eligible for the themed acrylic trophy and certificate. Trophies are carefully packed and dispatched within 7-14 days after the event ends. Once your order is shipped, you will receive a SMS notification containing your courier tracking details.',
     },
     {
       id: 4,

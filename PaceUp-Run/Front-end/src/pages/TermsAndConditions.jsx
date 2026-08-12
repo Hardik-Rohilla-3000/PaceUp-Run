@@ -35,7 +35,7 @@ export default function TermsAndConditions() {
 
             <section>
               <h3 className="font-display font-bold text-lg text-primary-navy dark:text-white mb-2">Delivery Timeline</h3>
-              <p>Upon successful validation of your submitted workout screenshot, the premium acrylic finisher trophy is personalized with your name and dispatched within 7–14 working days. E-certificates are available for immediate download in the user dashboard.</p>
+              <p>Upon successful validation of your submitted workout screenshot, the premium acrylic finisher trophy is personalized with your name and dispatched within 7–14 working days. E-certificates will be sent to your registered Email address after verification.</p>
             </section>
 
             <section>

@@ -300,7 +300,7 @@ export default function EventDetails({ registrationOpen = true }) {
   }, []);
 
   const rules = [
-    'The run must be completed within the official challenge period from 12 July 2026 to 18 July 2026.',
+    'The run must be completed within the official challenge period from 4 Sept 2026 to 10 Sept 2026.',
     'There is no minimum pace requirement. You can run, walk, or jog at your comfort level.',
     'Any GPS running application (Strava, Garmin, NRC, Google Fit, etc.) or treadmill panel counts.',
     'Workout screenshots must show: distance, date (if possible), time elapsed, and other activity details.',
@@ -309,7 +309,7 @@ export default function EventDetails({ registrationOpen = true }) {
 
   const benefits = [
     { title: 'Keep Motivated', desc: 'A tangible fitness challenge to push your boundaries and stay consistent with healthy habits.' },
-    { title: 'Physical Trophy Cabinet', desc: 'No cheap metal medals. Receive a stunning 5-inch themed acrylic trophy that catches the light.' },
+    { title: 'Physical Trophy Cabinet', desc: 'No cheap metal medals. Receive a stunning 6.5-inch themed acrylic trophy that catches the light.' },
     { title: 'Social Bragging Rights', desc: 'Download a personalized certificate and showcase your achievement to friends and family.' },
     { title: 'Completely Safe & Flexible', desc: 'Zero crowd risk. Run on your timeline, on your favorite local track, or right in your gym.' },
   ];

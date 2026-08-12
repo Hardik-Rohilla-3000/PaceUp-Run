@@ -259,7 +259,7 @@ export default function Event({ registrationOpen = true }) {
         <div className="max-w-5xl mx-auto px-4 py-4 flex flex-wrap justify-center gap-6 sm:gap-10">
           <div className="flex items-center gap-2 text-white/50 text-xs sm:text-sm">
             <Calendar className="h-4 w-4 text-accent-gold" />
-            <span>31st August - 6th September 2026</span>
+            <span>4 September - 10 September 2026</span>
           </div>
           <div className="flex items-center gap-2 text-white/50 text-xs sm:text-sm">
             <MapPin className="h-4 w-4 text-accent-gold" />
