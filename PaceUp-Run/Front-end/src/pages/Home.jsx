@@ -846,7 +846,7 @@ export default function Home({ registrationOpen = true }) {
           >
             <motion.div variants={fadeUp}>
               <div className="group h-full rounded-3xl overflow-hidden border border-slate-800 hover:border-accent-gold/20 transition-all duration-500 bg-gradient-to-br from-[#0a1628] to-[#040D1D]">
-                <div className="relative aspect-[4/3] overflow-hidden">
+                <div className="relative aspect-square overflow-hidden">
                   <img src="/acrylic_trophy.png" alt="Trophy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                   <div className="absolute top-4 left-4">
                     <span className="px-3 py-1 rounded-full bg-accent-gold/90 text-primary-navy text-[10px] font-bold uppercase tracking-wider">Premium</span>
@@ -861,7 +861,7 @@ export default function Home({ registrationOpen = true }) {
 
             <motion.div variants={fadeUp} custom={1}>
               <div className="group h-full rounded-3xl overflow-hidden border border-slate-800 hover:border-primary-blue/20 transition-all duration-500 bg-gradient-to-br from-[#0a1628] to-[#040D1D]">
-                <div className="relative aspect-[4/3] overflow-hidden">
+                <div className="relative aspect-square overflow-hidden">
                   <img src="/e_certificate.png" alt="Certificate" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                   <div className="absolute top-4 left-4">
                     <span className="px-3 py-1 rounded-full bg-primary-blue/90 text-white text-[10px] font-bold uppercase tracking-wider">Digital</span>
