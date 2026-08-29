@@ -530,7 +530,7 @@ const VALID_DISTANCE_IDS = new Set(['1600m', '3k', '5k', '10k', '21k']);
 const BASE_PRICE = 499;
 const COUPONS = {
   NIT100: { code: 'NIT 100', discount: 100 },
-  Athlete50: { code: 'Athlete50', discount: 50 },
+  ATHLETE50: { code: 'Athlete50', discount: 50 },
 };
 const VALID_GENDERS = new Set(['Male', 'Female', 'Other', 'Prefer not to say']);
 const VALID_EMPLOYMENT_STATUSES = new Set(['School Student', 'College Student', 'Working Professional']);
