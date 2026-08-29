@@ -1351,7 +1351,7 @@ export default function Registration({ registerData, setRegisterData, registrati
               onChange={handleInputChange}
               placeholder="Enter coupon code"
               maxLength={20}
-              className={`w-full px-4 py-3 rounded-xl border bg-slate-50 dark:bg-slate-850 dark:text-black transition-colors duration-200 outline-none text-sm uppercase ${
+              className={`w-full px-4 py-3 rounded-xl border bg-slate-50 dark:bg-slate-850 dark:text-black transition-colors duration-200 outline-none text-sm  ${
                 errors.coupon_code
                   ? 'border-red-500 dark:border-red-500'
                   : isCouponApplied
