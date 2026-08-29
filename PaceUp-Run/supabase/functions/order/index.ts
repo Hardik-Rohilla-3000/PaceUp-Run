@@ -8,7 +8,7 @@ const corsHeaders = {
 const REGISTRATION_FEE = 499.00
 const COUPONS: Record<string, { code: string; discount: number }> = {
   NIT100: { code: 'NIT 100', discount: 100.00 },
-  ATHELETE50: { code: 'Athelete50', discount: 50.00 },
+  Athlete50: { code: 'Athlete50', discount: 50.00 },
 }
 const VALID_GENDERS = new Set(['Male', 'Female', 'Other', 'Prefer not to say'])
 const VALID_EMPLOYMENT_STATUSES = new Set(['School Student', 'College Student', 'Working Professional'])

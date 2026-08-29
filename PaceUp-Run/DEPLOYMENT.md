@@ -36,6 +36,6 @@ Deploy `Front-end` through the existing Vercel project. A merge may trigger this
 
 1. Register without a coupon and confirm that Cashfree requests ₹499.
 2. Register with `NIT 100` or `NIT100` and confirm that Cashfree requests ₹399.
-3. Register with `Athelete50` and confirm that Cashfree requests ₹449.
+3. Register with `Athlete50` and confirm that Cashfree requests ₹449.
 4. Confirm that the Supabase registration row contains gender, age, employment status, coupon code, discount amount, and amount paid.
 5. Confirm that the admin dashboard and Excel export contain the new fields.

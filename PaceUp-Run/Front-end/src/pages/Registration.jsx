@@ -521,7 +521,7 @@ import { User, Mail, Phone, MapPin, CheckCircle2, ChevronRight, Award, Trophy, L
 // to the distance fix documented above.
 //
 // 1. Added required gender, age, and employment status fields with validation.
-// 2. Added NIT 100 for ₹100 off and Athelete50 for ₹50 off.
+// 2. Added NIT 100 for ₹100 off and Athlete50 for ₹50 off.
 // 3. Checkout sends the new participant fields and coupon to the Edge Function.
 // 4. Price summaries, payment confirmation, and tickets use the final amount.
 // 5. The Edge Function remains the authority for the Cashfree order amount.
@@ -530,7 +530,7 @@ const VALID_DISTANCE_IDS = new Set(['1600m', '3k', '5k', '10k', '21k']);
 const BASE_PRICE = 499;
 const COUPONS = {
   NIT100: { code: 'NIT 100', discount: 100 },
-  ATHELETE50: { code: 'Athelete50', discount: 50 },
+  Athlete50: { code: 'Athlete50', discount: 50 },
 };
 const VALID_GENDERS = new Set(['Male', 'Female', 'Other', 'Prefer not to say']);
 const VALID_EMPLOYMENT_STATUSES = new Set(['School Student', 'College Student', 'Working Professional']);

@@ -7,7 +7,7 @@ const corsHeaders = {
 
 const PAYMENT_OPTIONS = new Map([
   [399, { couponCode: 'NIT 100', discountAmount: 100 }],
-  [449, { couponCode: 'Athelete50', discountAmount: 50 }],
+  [449, { couponCode: 'Athlete50', discountAmount: 50 }],
   [499, { couponCode: '', discountAmount: 0 }],
 ])
 const VALID_GENDERS = new Set(['Male', 'Female', 'Other', 'Prefer not to say'])
