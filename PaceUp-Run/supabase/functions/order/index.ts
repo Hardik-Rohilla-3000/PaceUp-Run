@@ -6,7 +6,10 @@ const corsHeaders = {
 }
 
 const REGISTRATION_FEE = 499.00
-const COUPON_DISCOUNT = 100.00
+const COUPONS: Record<string, { code: string; discount: number }> = {
+  NIT100: { code: 'NIT 100', discount: 100.00 },
+  ATHELETE50: { code: 'Athelete50', discount: 50.00 },
+}
 const VALID_GENDERS = new Set(['Male', 'Female', 'Other', 'Prefer not to say'])
 const VALID_EMPLOYMENT_STATUSES = new Set(['School Student', 'College Student', 'Working Professional'])
 
@@ -32,11 +35,11 @@ Deno.serve(async (req) => {
     }
 
     const suppliedCoupon = String(coupon_code ?? '').trim()
-    const couponApplied = normalizeCoupon(suppliedCoupon) === 'NIT100'
-    if (suppliedCoupon && !couponApplied) return json({ error: 'Invalid coupon code' }, 400)
+    const coupon = COUPONS[normalizeCoupon(suppliedCoupon)]
+    if (suppliedCoupon && !coupon) return json({ error: 'Invalid coupon code' }, 400)
 
-    const appliedCouponCode = couponApplied ? 'NIT 100' : ''
-    const discountAmount = couponApplied ? COUPON_DISCOUNT : 0
+    const appliedCouponCode = coupon?.code || ''
+    const discountAmount = coupon?.discount || 0
     const orderAmount = REGISTRATION_FEE - discountAmount
 
     const CASHFREE_APP_ID = Deno.env.get('CASHFREE_APP_ID')

@@ -1,4 +1,4 @@
-# Deploying participant fields and the NIT 100 coupon
+# Deploying participant fields and discount coupons
 
 Deploy these changes in the order shown below. Vercel deploys the frontend only. It does not deploy Supabase migrations or Supabase Edge Functions.
 
@@ -36,5 +36,6 @@ Deploy `Front-end` through the existing Vercel project. A merge may trigger this
 
 1. Register without a coupon and confirm that Cashfree requests ₹499.
 2. Register with `NIT 100` or `NIT100` and confirm that Cashfree requests ₹399.
-3. Confirm that the Supabase registration row contains gender, age, employment status, coupon code, discount amount, and amount paid.
-4. Confirm that the admin dashboard and Excel export contain the new fields.
+3. Register with `Athelete50` and confirm that Cashfree requests ₹449.
+4. Confirm that the Supabase registration row contains gender, age, employment status, coupon code, discount amount, and amount paid.
+5. Confirm that the admin dashboard and Excel export contain the new fields.

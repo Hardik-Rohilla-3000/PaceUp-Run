@@ -515,20 +515,23 @@ import { User, Mail, Phone, MapPin, CheckCircle2, ChevronRight, Award, Trophy, L
 // Single source of truth - used in useState init AND validateForm().
 // Defined outside the component so it is never recreated on re-renders.
 // ---------------------------------------------------------------------------
-// CHANGE MADE BY VIKAS - PARTICIPANT DETAILS AND NIT 100 COUPON
+// CHANGE MADE BY VIKAS - PARTICIPANT DETAILS AND DISCOUNT COUPONS
 // ---------------------------------------------------------------------------
 // This is a later update. The earlier "zero visual changes" note applies only
 // to the distance fix documented above.
 //
 // 1. Added required gender, age, and employment status fields with validation.
-// 2. Added NIT 100 coupon handling. NIT100 and NIT 100 both receive ₹100 off.
+// 2. Added NIT 100 for ₹100 off and Athelete50 for ₹50 off.
 // 3. Checkout sends the new participant fields and coupon to the Edge Function.
 // 4. Price summaries, payment confirmation, and tickets use the final amount.
 // 5. The Edge Function remains the authority for the Cashfree order amount.
 // ---------------------------------------------------------------------------
 const VALID_DISTANCE_IDS = new Set(['1600m', '3k', '5k', '10k', '21k']);
 const BASE_PRICE = 499;
-const COUPON_DISCOUNT = 100;
+const COUPONS = {
+  NIT100: { code: 'NIT 100', discount: 100 },
+  ATHELETE50: { code: 'Athelete50', discount: 50 },
+};
 const VALID_GENDERS = new Set(['Male', 'Female', 'Other', 'Prefer not to say']);
 const VALID_EMPLOYMENT_STATUSES = new Set(['School Student', 'College Student', 'Working Professional']);
 
@@ -548,8 +551,10 @@ export default function Registration({ registerData, setRegisterData, registrati
   const [paymentFailed, setPaymentFailed]   = useState(false);
   const [paymentDetails, setPaymentDetails] = useState(null);
   const navigate = useNavigate();
-  const isCouponApplied = normalizeCoupon(registerData.coupon_code) === 'NIT100';
-  const payableAmount = isCouponApplied ? BASE_PRICE - COUPON_DISCOUNT : BASE_PRICE;
+  const appliedCoupon = COUPONS[normalizeCoupon(registerData.coupon_code)] || null;
+  const isCouponApplied = Boolean(appliedCoupon);
+  const couponDiscount = appliedCoupon?.discount || 0;
+  const payableAmount = BASE_PRICE - couponDiscount;
   const displayedAmount = Number(paymentDetails?.amountPaid ?? registerData.amount_paid ?? payableAmount);
 
   if (!registrationOpen && !isValidating) {
@@ -1357,7 +1362,7 @@ export default function Registration({ registerData, setRegisterData, registrati
             {errors.coupon_code && <p className="text-red-500 text-xs">{errors.coupon_code}</p>}
             {isCouponApplied && !errors.coupon_code && (
               <p className="text-green-600 dark:text-green-400 text-xs font-semibold">
-                NIT 100 applied. You saved ₹{COUPON_DISCOUNT}.
+                {appliedCoupon.code} applied. You saved ₹{couponDiscount}.
               </p>
             )}
           </div>
@@ -1423,8 +1428,8 @@ export default function Registration({ registerData, setRegisterData, registrati
                   <span className="text-slate-500 dark:text-slate-300">₹{BASE_PRICE}.00</span>
                 </div>
                 <div className="flex justify-between text-green-600 dark:text-green-400">
-                  <span>NIT 100 discount</span>
-                  <span>-₹{COUPON_DISCOUNT}.00</span>
+                  <span>{appliedCoupon.code} discount</span>
+                  <span>-₹{couponDiscount}.00</span>
                 </div>
               </div>
             )}

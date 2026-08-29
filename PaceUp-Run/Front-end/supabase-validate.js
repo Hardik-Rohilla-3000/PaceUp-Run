@@ -8,7 +8,11 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const VALID_AMOUNTS = new Set([399, 499])
+const PAYMENT_OPTIONS = new Map([
+  [399, { couponCode: 'NIT 100', discountAmount: 100 }],
+  [449, { couponCode: 'Athelete50', discountAmount: 50 }],
+  [499, { couponCode: '', discountAmount: 0 }],
+])
 const VALID_GENDERS = new Set(['Male', 'Female', 'Other', 'Prefer not to say'])
 const VALID_EMPLOYMENT_STATUSES = new Set(['School Student', 'College Student', 'Working Professional'])
 
@@ -48,10 +52,10 @@ Deno.serve(async (req) => {
     }
 
     const amountPaid = Number(orderData.order_amount)
-    if (!VALID_AMOUNTS.has(amountPaid)) return json({ error: 'Unexpected payment amount' }, 400)
+    const paymentOption = PAYMENT_OPTIONS.get(amountPaid)
+    if (!paymentOption) return json({ error: 'Unexpected payment amount' }, 400)
 
-    const couponCode = amountPaid === 399 ? 'NIT 100' : ''
-    const discountAmount = amountPaid === 399 ? 100 : 0
+    const { couponCode, discountAmount } = paymentOption
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
     const { data: existing, error: lookupError } = await supabase
       .from('registrations')

@@ -11,6 +11,10 @@ const corsHeaders = {
 
 const VALID_GENDERS = new Set(['Male', 'Female', 'Other', 'Prefer not to say'])
 const VALID_EMPLOYMENT_STATUSES = new Set(['School Student', 'College Student', 'Working Professional'])
+const COUPONS: Record<string, { code: string; discount: number }> = {
+  NIT100: { code: 'NIT 100', discount: 100 },
+  ATHELETE50: { code: 'Athelete50', discount: 50 },
+}
 
 const normalizeCoupon = (value: unknown) => String(value ?? '').trim().replace(/\s+/g, '').toUpperCase()
 
@@ -38,11 +42,11 @@ Deno.serve(async (req) => {
     }
 
     const suppliedCoupon = String(coupon_code ?? '').trim()
-    const couponApplied = normalizeCoupon(suppliedCoupon) === 'NIT100'
-    if (suppliedCoupon && !couponApplied) return json({ error: 'Invalid coupon code' }, 400)
+    const coupon = COUPONS[normalizeCoupon(suppliedCoupon)]
+    if (suppliedCoupon && !coupon) return json({ error: 'Invalid coupon code' }, 400)
 
-    const appliedCouponCode = couponApplied ? 'NIT 100' : ''
-    const discountAmount = couponApplied ? 100 : 0
+    const appliedCouponCode = coupon?.code || ''
+    const discountAmount = coupon?.discount || 0
     const amountPaid = 499 - discountAmount
 
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL')
