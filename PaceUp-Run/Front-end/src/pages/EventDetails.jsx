@@ -300,7 +300,7 @@ export default function EventDetails({ registrationOpen = true }) {
   }, []);
 
   const rules = [
-    'The run must be completed within the official challenge period from 4 Sept 2026 to 10 Sept 2026.',
+    'The run must be completed within the official challenge period from 4 Sept 2026 to 13 Sept 2026.',
     'There is no minimum pace requirement. You can run, walk, or jog at your comfort level.',
     'Any GPS running application (Strava, Garmin, NRC, Google Fit, etc.) or treadmill panel counts.',
     'Workout screenshots must show: distance, date (if possible), time elapsed, and other activity details.',
