@@ -23,7 +23,7 @@ export default function PrivacyPolicy() {
                 1. Information We Collect
               </h2>
               <p className="pl-4 border-l-2 border-accent-gold/50">
-                We collect full names, email addresses, telephone numbers, and physical shipping addresses during registration to execute the personalized engraving and courier fulfillment process.
+                We collect names, email addresses, telephone numbers, gender, age, employment status, challenge selection, payment details, and physical shipping addresses during registration. We use this information to manage participation, payment records, personalized engraving, and courier fulfillment.
               </p>
             </section>
 

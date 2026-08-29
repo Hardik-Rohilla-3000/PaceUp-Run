@@ -42,18 +42,25 @@ function deliveryBadgeClass(status) {
 // Excel download helper
 function downloadExcel(rows, filename = 'paceup-registrations.xlsx') {
   const headers = [
-    'Name', 'Email', 'Phone', 'Distance', 'City', 'State', 'Pincode',
-    'Address', 'Registered At', 'Payment Status', 'Delivery Status', 'Tracking ID', 'Cashfree Order ID',
+    'Name', 'Email', 'Phone', 'Gender', 'Age', 'Employment Status', 'Distance', 'City', 'State', 'Pincode',
+    'Address', 'Coupon Code', 'Discount Amount', 'Amount Paid', 'Registered At', 'Payment Status',
+    'Delivery Status', 'Tracking ID', 'Cashfree Order ID',
   ];
   const data = rows.map(u => ({
     'Name': u.name || '',
     'Email': u.email || '',
     'Phone': u.phone || '',
+    'Gender': u.gender || '',
+    'Age': u.age ?? '',
+    'Employment Status': u.employment_status || '',
     'Distance': u.distance || '',
     'City': u.city || '',
     'State': u.state || '',
     'Pincode': u.pincode || '',
     'Address': u.address || '',
+    'Coupon Code': u.coupon_code || '',
+    'Discount Amount': u.discount_amount ?? 0,
+    'Amount Paid': u.amount_paid ?? '',
     'Registered At': u.created_at ? new Date(u.created_at).toLocaleString('en-IN') : '',
     'Payment Status': u.payment_status || '',
     'Delivery Status': u.delivery_status || 'not_shipped',
@@ -820,10 +827,16 @@ function UserCard({ user, index, isDraft = false, onDelete }) {
       </div>
       <div className="px-5 py-4 grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-4">
         <Field label="Phone"      value={user.phone} />
+        <Field label="Gender"     value={user.gender} />
+        <Field label="Age"        value={user.age} />
+        <Field label="Employment" value={user.employment_status} />
         <Field label="City"       value={user.city} />
         <Field label="State"      value={user.state} />
         <Field label="Pincode"    value={user.pincode} />
         <Field label="Registered" value={registeredAt} />
+        <Field label="Coupon"     value={user.coupon_code || 'None'} />
+        <Field label="Discount"   value={`₹${Number(user.discount_amount || 0).toFixed(2)}`} />
+        <Field label="Amount Paid" value={user.amount_paid != null ? `₹${Number(user.amount_paid).toFixed(2)}` : '-'} />
         <div className="col-span-2 sm:col-span-3">
           <p className="text-xs text-slate-400 uppercase tracking-wider font-medium mb-0.5">Address</p>
           <p className="text-sm text-primary-navy dark:text-white font-medium">{user.address || '-'}</p>
@@ -886,7 +899,10 @@ function DashboardRow({ user, index, proof, onDeliveryChange, onTrackingChange, 
           {/* Row 2: Details inline */}
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-[11px] text-slate-500 dark:text-slate-400">
             <span>{user.city || '-'}, {user.state || '-'} · {user.pincode || '-'}</span>
+            <span>{user.gender || '-'} · Age {user.age || '-'}</span>
+            <span>{user.employment_status || '-'}</span>
             <span>{registeredAt}</span>
+            <span>Paid ₹{Number(user.amount_paid ?? 499).toFixed(2)}{user.coupon_code ? ` · ${user.coupon_code}` : ''}</span>
             {proof && <span className="text-primary-navy dark:text-white font-semibold">{proof.km_logged} logged</span>}
           </div>
 

@@ -5,40 +5,65 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const REGISTRATION_FEE = 499.00 // ₹499.00
+const REGISTRATION_FEE = 499.00
+const COUPON_DISCOUNT = 100.00
+const VALID_GENDERS = new Set(['Male', 'Female', 'Other', 'Prefer not to say'])
+const VALID_EMPLOYMENT_STATUSES = new Set(['School Student', 'College Student', 'Working Professional'])
+
+const normalizeCoupon = (value: unknown) => String(value ?? '').trim().replace(/\s+/g, '').toUpperCase()
 
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
-  }
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
     const {
       customer_name, customer_email, customer_phone,
       address, city, state, pincode, distance,
+      gender, age, employment_status, coupon_code,
     } = await req.json()
 
-    const CASHFREE_APP_ID     = Deno.env.get('CASHFREE_APP_ID')
-    const CASHFREE_SECRET_KEY = Deno.env.get('CASHFREE_SECRET_KEY')
+    const parsedAge = Number(age)
+    if (!VALID_GENDERS.has(gender)) return json({ error: 'Invalid gender' }, 400)
+    if (!Number.isInteger(parsedAge) || parsedAge < 5 || parsedAge > 100) {
+      return json({ error: 'Age must be a whole number between 5 and 100' }, 400)
+    }
+    if (!VALID_EMPLOYMENT_STATUSES.has(employment_status)) {
+      return json({ error: 'Invalid employment status' }, 400)
+    }
 
-    const order_id    = `paceup_${Date.now()}`
+    const suppliedCoupon = String(coupon_code ?? '').trim()
+    const couponApplied = normalizeCoupon(suppliedCoupon) === 'NIT100'
+    if (suppliedCoupon && !couponApplied) return json({ error: 'Invalid coupon code' }, 400)
+
+    const appliedCouponCode = couponApplied ? 'NIT 100' : ''
+    const discountAmount = couponApplied ? COUPON_DISCOUNT : 0
+    const orderAmount = REGISTRATION_FEE - discountAmount
+
+    const CASHFREE_APP_ID = Deno.env.get('CASHFREE_APP_ID')
+    const CASHFREE_SECRET_KEY = Deno.env.get('CASHFREE_SECRET_KEY')
+    const SUPABASE_URL = Deno.env.get('SUPABASE_URL')
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+    if (!CASHFREE_APP_ID || !CASHFREE_SECRET_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+      return json({ error: 'Required server configuration is missing' }, 500)
+    }
+    const order_id = `paceup_${Date.now()}`
     const customer_id = `cust_${Date.now()}`
 
     const response = await fetch('https://api.cashfree.com/pg/orders', {
       method: 'POST',
       headers: {
-        'Content-Type':    'application/json',
-        'x-api-version':   '2023-08-01',
-        'x-client-id':     CASHFREE_APP_ID,
+        'Content-Type': 'application/json',
+        'x-api-version': '2023-08-01',
+        'x-client-id': CASHFREE_APP_ID,
         'x-client-secret': CASHFREE_SECRET_KEY,
       },
       body: JSON.stringify({
         order_id,
-        order_amount:   REGISTRATION_FEE,
+        order_amount: orderAmount,
         order_currency: 'INR',
         customer_details: {
           customer_id,
-          customer_name:  customer_name  || 'Participant',
+          customer_name: customer_name || 'Participant',
           customer_email: customer_email || 'participant@paceuprun.in',
           customer_phone: customer_phone || '9999999999',
         },
@@ -49,44 +74,49 @@ Deno.serve(async (req) => {
     })
 
     const order = await response.json()
+    if (!response.ok) return json(order, 400)
 
-    if (!response.ok) {
-      return new Response(JSON.stringify(order), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
-      })
-    }
-
-    // Save as pending - fallback agar payment ke baad localStorage na mile
     const supabase = createClient(
-      Deno.env.get('SUPABASE_URL'),
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+      SUPABASE_URL,
+      SUPABASE_SERVICE_ROLE_KEY,
     )
 
-    await supabase.from('registrations').insert({
-      name:              customer_name,
-      email:             customer_email,
-      phone:             customer_phone,
-      address:           address  || '',
-      city:              city     || '',
-      state:             state    || '',
-      pincode:           pincode  || '',
-      distance:          distance || '',
+    const { error: insertError } = await supabase.from('registrations').insert({
+      name: customer_name,
+      email: customer_email,
+      phone: customer_phone,
+      gender,
+      age: parsedAge,
+      employment_status,
+      address: address || '',
+      city: city || '',
+      state: state || '',
+      pincode: pincode || '',
+      distance: distance || '',
+      coupon_code: appliedCouponCode,
+      discount_amount: discountAmount,
+      amount_paid: null,
       cashfree_order_id: order.order_id,
-      payment_status:    'pending',
+      payment_status: 'pending',
     })
 
-    return new Response(JSON.stringify({
+    if (insertError) return json({ error: 'DB insert failed: ' + insertError.message }, 500)
+
+    return json({
       payment_session_id: order.payment_session_id,
-      order_id:           order.order_id,
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 200,
+      order_id: order.order_id,
+      coupon_code: appliedCouponCode,
+      discount_amount: discountAmount,
+      amount: orderAmount,
     })
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 500,
-    })
+    return json({ error: error instanceof Error ? error.message : String(error) }, 500)
   }
 })
+
+function json(data: unknown, status = 200) {
+  return new Response(JSON.stringify(data), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    status,
+  })
+}
