@@ -5,113 +5,137 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+const PAYMENT_OPTIONS = new Map([
+  [399, { couponCode: 'NIT 100', discountAmount: 100 }],
+  [449, { couponCode: 'Athelete50', discountAmount: 50 }],
+  [499, { couponCode: '', discountAmount: 0 }],
+])
+const VALID_GENDERS = new Set(['Male', 'Female', 'Other', 'Prefer not to say'])
+const VALID_EMPLOYMENT_STATUSES = new Set(['School Student', 'College Student', 'Working Professional'])
+
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
-  }
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
     const {
       order_id,
       name, email, phone, address, city, state, pincode, distance,
+      gender, age, employment_status,
     } = await req.json()
 
-    const CASHFREE_APP_ID     = Deno.env.get('CASHFREE_APP_ID')
+    if (!order_id) return json({ error: 'order_id is required' }, 400)
+
+    const CASHFREE_APP_ID = Deno.env.get('CASHFREE_APP_ID')
     const CASHFREE_SECRET_KEY = Deno.env.get('CASHFREE_SECRET_KEY')
+    const SUPABASE_URL = Deno.env.get('SUPABASE_URL')
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+    if (!CASHFREE_APP_ID || !CASHFREE_SECRET_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+      return json({ error: 'Required server configuration is missing' }, 500)
+    }
 
     const verifyResponse = await fetch(`https://api.cashfree.com/pg/orders/${order_id}`, {
       method: 'GET',
       headers: {
-        'Content-Type':    'application/json',
-        'x-api-version':   '2023-08-01',
-        'x-client-id':     CASHFREE_APP_ID,
+        'Content-Type': 'application/json',
+        'x-api-version': '2023-08-01',
+        'x-client-id': CASHFREE_APP_ID,
         'x-client-secret': CASHFREE_SECRET_KEY,
       },
     })
 
     const orderData = await verifyResponse.json()
-
     if (!verifyResponse.ok || orderData.order_status !== 'PAID') {
-      return new Response(JSON.stringify({ msg: 'Payment not verified', status: orderData.order_status }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
-      })
+      return json({ msg: 'Payment not verified', status: orderData.order_status }, 400)
     }
 
+    const amountPaid = Number(orderData.order_amount)
+    const paymentOption = PAYMENT_OPTIONS.get(amountPaid)
+    if (!paymentOption) {
+      return json({ error: 'Unexpected payment amount' }, 400)
+    }
+
+    const { couponCode, discountAmount } = paymentOption
     const supabase = createClient(
-      Deno.env.get('SUPABASE_URL'),
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+      SUPABASE_URL,
+      SUPABASE_SERVICE_ROLE_KEY,
     )
 
-    // Check if already paid (duplicate webhook/redirect)
-    const { data: existing } = await supabase
+    const { data: existing, error: lookupError } = await supabase
       .from('registrations')
-      .select('id, payment_status')
+      .select('*')
       .eq('cashfree_order_id', order_id)
       .maybeSingle()
 
+    if (lookupError) return json({ error: 'DB lookup failed: ' + lookupError.message }, 500)
+
     if (existing && existing.payment_status === 'paid') {
-      return new Response(JSON.stringify({
-        msg:       'Payment verified',
-        orderId:   order_id,
-        paymentId: orderData.cf_order_id,
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      })
+      return paymentResponse(orderData, order_id, amountPaid, couponCode, discountAmount)
     }
 
     if (existing) {
-      // Row exists as pending - UPDATE to paid
       const { error } = await supabase
         .from('registrations')
         .update({
           payment_status: 'paid',
-          name:     name     || existing.name,
-          email:    email    || existing.email,
-          phone:    phone    || existing.phone,
-          address:  address  || existing.address,
-          city:     city     || existing.city,
-          state:    state    || existing.state,
-          pincode:  pincode  || existing.pincode,
-          distance: distance || existing.distance,
+          coupon_code: couponCode,
+          discount_amount: discountAmount,
+          amount_paid: amountPaid,
         })
         .eq('cashfree_order_id', order_id)
 
-      if (error) {
-        return new Response(JSON.stringify({ error: 'DB update failed: ' + error.message }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 500,
-        })
-      }
+      if (error) return json({ error: 'DB update failed: ' + error.message }, 500)
     } else {
-      // No pending row - insert fresh (fallback)
+      const parsedAge = Number(age)
+      if (!VALID_GENDERS.has(gender)) return json({ error: 'Invalid gender' }, 400)
+      if (!Number.isInteger(parsedAge) || parsedAge < 5 || parsedAge > 100) {
+        return json({ error: 'Age must be a whole number between 5 and 100' }, 400)
+      }
+      if (!VALID_EMPLOYMENT_STATUSES.has(employment_status)) {
+        return json({ error: 'Invalid employment status' }, 400)
+      }
+
       const { error } = await supabase.from('registrations').insert({
-        name, email, phone, address, city, state, pincode, distance,
+        name,
+        email,
+        phone,
+        gender,
+        age: parsedAge,
+        employment_status,
+        address,
+        city,
+        state,
+        pincode,
+        distance,
+        coupon_code: couponCode,
+        discount_amount: discountAmount,
+        amount_paid: amountPaid,
         cashfree_order_id: order_id,
-        payment_status:    'paid',
+        payment_status: 'paid',
       })
 
-      if (error) {
-        return new Response(JSON.stringify({ error: 'DB insert failed: ' + error.message }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 500,
-        })
-      }
+      if (error) return json({ error: 'DB insert failed: ' + error.message }, 500)
     }
 
-    return new Response(JSON.stringify({
-      msg:       'Payment verified',
-      orderId:   order_id,
-      paymentId: orderData.cf_order_id,
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 200,
-    })
+    return paymentResponse(orderData, order_id, amountPaid, couponCode, discountAmount)
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 500,
-    })
+    return json({ error: error instanceof Error ? error.message : String(error) }, 500)
   }
 })
+
+function paymentResponse(orderData: Record<string, unknown>, orderId: string, amountPaid: number, couponCode: string, discountAmount: number) {
+  return json({
+    msg: 'Payment verified',
+    orderId,
+    paymentId: orderData.cf_order_id,
+    amountPaid,
+    couponCode,
+    discountAmount,
+  })
+}
+
+function json(data: unknown, status = 200) {
+  return new Response(JSON.stringify(data), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    status,
+  })
+}

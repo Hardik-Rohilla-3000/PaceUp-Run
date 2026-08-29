@@ -243,6 +243,9 @@ export default function App() {
     name: '',
     email: '',
     phone: '',
+    gender: '',
+    age: '',
+    employment_status: '',
     address_line1: '',
     address_line2: '',
     address_line3: '',
@@ -250,6 +253,7 @@ export default function App() {
     state: '',
     pincode: '',
     distance: '10K',
+    coupon_code: '',
   });
 
   useEffect(() => {

@@ -514,7 +514,28 @@ import { User, Mail, Phone, MapPin, CheckCircle2, ChevronRight, Award, Trophy, L
 // CHANGE 1: Module-level Set of all valid distance IDs.
 // Single source of truth - used in useState init AND validateForm().
 // Defined outside the component so it is never recreated on re-renders.
+// ---------------------------------------------------------------------------
+// CHANGE MADE BY VIKAS - PARTICIPANT DETAILS AND DISCOUNT COUPONS
+// ---------------------------------------------------------------------------
+// This is a later update. The earlier "zero visual changes" note applies only
+// to the distance fix documented above.
+//
+// 1. Added required gender, age, and employment status fields with validation.
+// 2. Added NIT 100 for ₹100 off and Athelete50 for ₹50 off.
+// 3. Checkout sends the new participant fields and coupon to the Edge Function.
+// 4. Price summaries, payment confirmation, and tickets use the final amount.
+// 5. The Edge Function remains the authority for the Cashfree order amount.
+// ---------------------------------------------------------------------------
 const VALID_DISTANCE_IDS = new Set(['1600m', '3k', '5k', '10k', '21k']);
+const BASE_PRICE = 499;
+const COUPONS = {
+  NIT100: { code: 'NIT 100', discount: 100 },
+  ATHELETE50: { code: 'Athelete50', discount: 50 },
+};
+const VALID_GENDERS = new Set(['Male', 'Female', 'Other', 'Prefer not to say']);
+const VALID_EMPLOYMENT_STATUSES = new Set(['School Student', 'College Student', 'Working Professional']);
+
+const normalizeCoupon = (value = '') => value.trim().replace(/\s+/g, '').toUpperCase();
 
 
 export default function Registration({ registerData, setRegisterData, registrationOpen = true }) {
@@ -530,6 +551,11 @@ export default function Registration({ registerData, setRegisterData, registrati
   const [paymentFailed, setPaymentFailed]   = useState(false);
   const [paymentDetails, setPaymentDetails] = useState(null);
   const navigate = useNavigate();
+  const appliedCoupon = COUPONS[normalizeCoupon(registerData.coupon_code)] || null;
+  const isCouponApplied = Boolean(appliedCoupon);
+  const couponDiscount = appliedCoupon?.discount || 0;
+  const payableAmount = BASE_PRICE - couponDiscount;
+  const displayedAmount = Number(paymentDetails?.amountPaid ?? registerData.amount_paid ?? payableAmount);
 
   if (!registrationOpen && !isValidating) {
     return (
@@ -629,6 +655,16 @@ export default function Registration({ registerData, setRegisterData, registrati
       tempErrors.phone = 'Please enter a valid 10-digit mobile number';
     }
 
+    if (!VALID_GENDERS.has(registerData.gender))
+      tempErrors.gender = 'Please select your gender';
+
+    const age = Number(registerData.age);
+    if (!Number.isInteger(age) || age < 5 || age > 100)
+      tempErrors.age = 'Please enter an age between 5 and 100';
+
+    if (!VALID_EMPLOYMENT_STATUSES.has(registerData.employment_status))
+      tempErrors.employment_status = 'Please select your employment status';
+
     if (!registerData.address_line1?.trim())
       tempErrors.address_line1 = 'Address Line 1 is required for courier delivery';
 
@@ -650,6 +686,9 @@ export default function Registration({ registerData, setRegisterData, registrati
     if (!distance || !VALID_DISTANCE_IDS.has(distance)) {
       tempErrors.distance = 'Please select a challenge distance to continue';
     }
+
+    if (registerData.coupon_code?.trim() && !isCouponApplied)
+      tempErrors.coupon_code = 'Invalid coupon code';
 
     setErrors(tempErrors);
     return Object.keys(tempErrors).length === 0;
@@ -683,6 +722,10 @@ export default function Registration({ registerData, setRegisterData, registrati
           state:          finalData.state,
           pincode:        finalData.pincode,
           distance:       finalData.distance,
+          gender:         finalData.gender,
+          age:            Number(finalData.age),
+          employment_status: finalData.employment_status,
+          coupon_code:    finalData.coupon_code,
         }),
       });
 
@@ -690,17 +733,24 @@ export default function Registration({ registerData, setRegisterData, registrati
         throw new Error(`Order creation failed: ${orderResponse.status}`);
       }
 
-      const { payment_session_id } = await orderResponse.json();
+      const orderData = await orderResponse.json();
+      const checkoutData = {
+        ...finalData,
+        coupon_code: orderData.coupon_code || '',
+        discount_amount: orderData.discount_amount || 0,
+        amount_paid: orderData.amount,
+      };
+      setRegisterData(checkoutData);
 
       // Save form data before redirect (Cashfree navigates away)
-      localStorage.setItem('paceup_register_data', JSON.stringify(finalData));
+      localStorage.setItem('paceup_register_data', JSON.stringify(checkoutData));
 
       const cashfree = window.Cashfree({
         mode: import.meta.env.VITE_CASHFREE_MODE || 'production',
       });
 
       cashfree.checkout({
-        paymentSessionId: payment_session_id,
+        paymentSessionId: orderData.payment_session_id,
         returnUrl: `${window.location.origin}/register?order_id={order_id}&payment_status={payment_status}`,
       });
 
@@ -792,7 +842,7 @@ export default function Registration({ registerData, setRegisterData, registrati
     const values = [
       (registerData.distance || '').toUpperCase(),
       registerData.phone || '-',
-      '₹499.00',
+      `₹${displayedAmount.toFixed(2)}`,
       new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
     ];
 
@@ -920,7 +970,7 @@ export default function Registration({ registerData, setRegisterData, registrati
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-slate-500 dark:text-slate-400">Amount Paid</span>
-            <span className="font-semibold text-green-600">₹499.00</span>
+            <span className="font-semibold text-green-600">₹{displayedAmount.toFixed(2)}</span>
           </div>
         </div>
         <p className="text-xs text-slate-400">
@@ -1037,6 +1087,78 @@ export default function Registration({ registerData, setRegisterData, registrati
                   />
                 </div>
                 {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label htmlFor="gender" className="block text-xs font-bold uppercase tracking-wider text-slate-550 dark:text-slate-400 mb-2">
+                  Gender *
+                </label>
+                <select
+                  id="gender"
+                  name="gender"
+                  value={registerData.gender || ''}
+                  onChange={handleInputChange}
+                  className={`w-full px-4 py-3 rounded-xl border bg-slate-50 dark:bg-slate-850 dark:text-black transition-colors duration-200 outline-none text-sm ${
+                    errors.gender
+                      ? 'border-red-500 dark:border-red-500'
+                      : 'border-slate-200 dark:border-slate-750 focus:border-primary-royal dark:focus:border-accent-gold'
+                  }`}
+                >
+                  <option value="">Select gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                  <option value="Prefer not to say">Prefer not to say</option>
+                </select>
+                {errors.gender && <p className="text-red-500 text-xs mt-1">{errors.gender}</p>}
+              </div>
+
+              <div>
+                <label htmlFor="age" className="block text-xs font-bold uppercase tracking-wider text-slate-550 dark:text-slate-400 mb-2">
+                  Age *
+                </label>
+                <input
+                  type="number"
+                  id="age"
+                  name="age"
+                  min="5"
+                  max="100"
+                  step="1"
+                  value={registerData.age || ''}
+                  onChange={handleInputChange}
+                  placeholder="Age"
+                  className={`w-full px-4 py-3 rounded-xl border bg-slate-50 dark:bg-slate-850 dark:text-black transition-colors duration-200 outline-none text-sm ${
+                    errors.age
+                      ? 'border-red-500 dark:border-red-500'
+                      : 'border-slate-200 dark:border-slate-750 focus:border-primary-royal dark:focus:border-accent-gold'
+                  }`}
+                />
+                {errors.age && <p className="text-red-500 text-xs mt-1">{errors.age}</p>}
+              </div>
+
+              <div>
+                <label htmlFor="employment_status" className="block text-xs font-bold uppercase tracking-wider text-slate-550 dark:text-slate-400 mb-2">
+                  Employment Status *
+                </label>
+                <select
+                  id="employment_status"
+                  name="employment_status"
+                  value={registerData.employment_status || ''}
+                  onChange={handleInputChange}
+                  className={`w-full px-4 py-3 rounded-xl border bg-slate-50 dark:bg-slate-850 dark:text-black transition-colors duration-200 outline-none text-sm ${
+                    errors.employment_status
+                      ? 'border-red-500 dark:border-red-500'
+                      : 'border-slate-200 dark:border-slate-750 focus:border-primary-royal dark:focus:border-accent-gold'
+                  }`}
+                >
+                  <option value="">Select status</option>
+                  <option value="School Student">School Student</option>
+                  <option value="College Student">College Student</option>
+                  <option value="Working Professional">Working Professional</option>
+                </select>
+                {errors.employment_status && <p className="text-red-500 text-xs mt-1">{errors.employment_status}</p>}
               </div>
             </div>
           </div>
@@ -1217,6 +1339,34 @@ export default function Registration({ registerData, setRegisterData, registrati
             </div>
           </div>
 
+          <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+            <label htmlFor="coupon_code" className="block text-xs font-bold uppercase tracking-wider text-slate-550 dark:text-slate-400">
+              Coupon Code
+            </label>
+            <input
+              type="text"
+              id="coupon_code"
+              name="coupon_code"
+              value={registerData.coupon_code || ''}
+              onChange={handleInputChange}
+              placeholder="Enter coupon code"
+              maxLength={20}
+              className={`w-full px-4 py-3 rounded-xl border bg-slate-50 dark:bg-slate-850 dark:text-black transition-colors duration-200 outline-none text-sm uppercase ${
+                errors.coupon_code
+                  ? 'border-red-500 dark:border-red-500'
+                  : isCouponApplied
+                    ? 'border-green-500 dark:border-green-500'
+                    : 'border-slate-200 dark:border-slate-750 focus:border-primary-royal dark:focus:border-accent-gold'
+              }`}
+            />
+            {errors.coupon_code && <p className="text-red-500 text-xs">{errors.coupon_code}</p>}
+            {isCouponApplied && !errors.coupon_code && (
+              <p className="text-green-600 dark:text-green-400 text-xs font-semibold">
+                {appliedCoupon.code} applied. You saved ₹{couponDiscount}.
+              </p>
+            )}
+          </div>
+
           <div className="pt-4 flex gap-3">
             <button
               type="submit"
@@ -1235,7 +1385,7 @@ export default function Registration({ registerData, setRegisterData, registrati
                 </>
               ) : (
                 <>
-                  <span>Proceed to Checkout (₹499)</span>
+                  <span>Proceed to Checkout (₹{payableAmount})</span>
                   <ChevronRight className="h-5 w-5" />
                 </>
               )}
@@ -1249,7 +1399,7 @@ export default function Registration({ registerData, setRegisterData, registrati
         <div className="lg:col-span-4 space-y-6">
           <div className="bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl space-y-4">
             <h3 className="font-display font-bold text-base text-primary-navy dark:text-white">
-              ₹499 Package Inclusions
+              ₹{BASE_PRICE} Package Inclusions
             </h3>
 
             <div className="space-y-3 text-xs text-slate-650 dark:text-slate-350">
@@ -1271,9 +1421,22 @@ export default function Registration({ registerData, setRegisterData, registrati
               </div>
             </div>
 
-            <div className="border-t border-slate-200 dark:border-slate-800 pt-3 flex justify-between items-center text-xs">
+            {isCouponApplied && (
+              <div className="border-t border-slate-200 dark:border-slate-800 pt-3 space-y-2 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Registration fee</span>
+                  <span className="text-slate-500 dark:text-slate-300">₹{BASE_PRICE}.00</span>
+                </div>
+                <div className="flex justify-between text-green-600 dark:text-green-400">
+                  <span>{appliedCoupon.code} discount</span>
+                  <span>-₹{couponDiscount}.00</span>
+                </div>
+              </div>
+            )}
+
+            <div className={`${isCouponApplied ? '' : 'border-t border-slate-200 dark:border-slate-800 pt-3'} flex justify-between items-center text-xs`}>
               <span className="text-slate-400">Total Price:</span>
-              <span className="font-display font-black text-lg text-primary-navy dark:text-white">₹499.00</span>
+              <span className="font-display font-black text-lg text-primary-navy dark:text-white">₹{payableAmount}.00</span>
             </div>
           </div>
 
