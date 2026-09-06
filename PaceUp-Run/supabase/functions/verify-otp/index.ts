@@ -42,7 +42,14 @@ Deno.serve(async (req) => {
 
     if (userErr || !user) return json({ error: 'Registration not found.' }, 404)
 
-    return json({ user })
+    // Check if user already submitted proof
+    const { data: existingProof } = await supabase
+      .from('proof_submissions')
+      .select('id, screenshot_url, km_logged, created_at')
+      .eq('email', email)
+      .maybeSingle()
+
+    return json({ user, existingProof: existingProof || null })
   } catch (err) {
     console.error(err)
     return json({ error: err.message }, 500)

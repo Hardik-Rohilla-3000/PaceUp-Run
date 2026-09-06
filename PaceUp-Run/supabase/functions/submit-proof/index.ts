@@ -19,7 +19,7 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'),
     )
 
-    // Prevent duplicate submissions
+    // Check if already submitted
     const { data: existing } = await supabase
       .from('proof_submissions')
       .select('id')
@@ -27,7 +27,14 @@ Deno.serve(async (req) => {
       .maybeSingle()
 
     if (existing) {
-      return json({ error: 'You have already submitted your proof.' }, 409)
+      // Update existing submission
+      const { error: updateErr } = await supabase
+        .from('proof_submissions')
+        .update({ screenshot_url, km_logged })
+        .eq('id', existing.id)
+
+      if (updateErr) throw new Error('DB update failed: ' + updateErr.message)
+      return json({ msg: 'Proof updated successfully' })
     }
 
     const { error: insertErr } = await supabase

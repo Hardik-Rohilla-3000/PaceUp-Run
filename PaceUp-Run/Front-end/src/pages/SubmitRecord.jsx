@@ -29,6 +29,8 @@ export default function SubmitRecord() {
   const [error, setError]       = useState('');
   const [success, setSuccess]   = useState(false);
   const [submissionOpen, setSubmissionOpen] = useState(null);
+  const [existingProof, setExistingProof] = useState(null);
+  const [resubmitting, setResubmitting] = useState(false);
 
   useEffect(() => {
     fetch(`${API_URL}/get-settings`, {
@@ -78,7 +80,12 @@ export default function SubmitRecord() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Invalid OTP');
       setUserData(data.user);
-      setStep(3);
+      if (data.existingProof) {
+        setExistingProof(data.existingProof);
+        setStep(4);
+      } else {
+        setStep(3);
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -288,6 +295,54 @@ export default function SubmitRecord() {
                 ← Change email
               </button>
             </form>
+          </>
+        )}
+
+        {/* ─── STEP 4: Already Submitted ─── */}
+        {step === 4 && existingProof && userData && !resubmitting && (
+          <>
+            <div className="flex flex-col items-center text-center gap-4">
+              <CheckCircle2 className="h-16 w-16 text-green-500" />
+              <div className="space-y-1">
+                <h1 className="font-display font-black text-2xl text-primary-navy dark:text-white">
+                  Already Submitted!
+                </h1>
+                <p className="text-slate-400 text-sm">
+                  {userData.name}, you have already submitted your record.
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-slate-50 dark:bg-slate-800 rounded-2xl overflow-hidden">
+              <img src={existingProof.screenshot_url} alt="submitted proof" className="w-full max-h-64 object-cover" />
+              <div className="p-4 space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Distance Logged</span>
+                  <span className="font-semibold text-primary-navy dark:text-white">{existingProof.km_logged}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Submitted On</span>
+                  <span className="font-semibold text-primary-navy dark:text-white">
+                    {new Date(existingProof.created_at).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => navigate('/')}
+                className="flex-1 py-3 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+              >
+                Go Home
+              </button>
+              <button
+                onClick={() => { setResubmitting(true); setStep(3); setFile(null); setPreview(null); setKmLogged(''); setError(''); }}
+                className="flex-1 py-3 rounded-xl bg-accent-gold text-primary-navy font-bold text-sm hover:opacity-90 transition-opacity"
+              >
+                Submit Again?
+              </button>
+            </div>
           </>
         )}
 
