@@ -278,7 +278,8 @@ export default function Event({ registrationOpen = true }) {
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-20 py-16">
 
-        {/* Section 1: Upcoming Event Card */}
+
+ {/* Section : Upcoming Event Card(winter arc) */}
         <div className="relative">
           <span className="inline-block font-display font-bold text-[10px] tracking-[0.25em] uppercase text-green-400 border border-green-400/30 bg-green-400/10 px-4 py-1.5 rounded-full mb-4">
             Upcoming Event
@@ -362,6 +363,180 @@ export default function Event({ registrationOpen = true }) {
             </div>
           </div>
         </div>
+
+        
+{/* Section 1: Upcoming Event Card */}
+<div className="relative">
+
+  {/* Upcoming Event Label */}
+  <span className="inline-block font-display font-bold text-[10px] tracking-[0.25em] uppercase text-green-400 border border-green-400/30 bg-green-400/10 px-4 py-1.5 rounded-full mb-4">
+    Upcoming Event
+  </span>
+
+  <div className="bg-white/[0.02] border border-white/[0.07] rounded-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-12">
+
+    {/* Event Image */}
+    <div className="lg:col-span-5 relative min-h-[240px] lg:min-h-[420px]">
+      <img
+        src="/event-card.png"
+        alt="The Forever Athlete Run 2026"
+        className="w-full h-full object-cover absolute inset-0 grayscale"
+      />
+
+      <div className="absolute inset-0 bg-gradient-to-t from-[#040D1D] via-transparent to-transparent lg:bg-gradient-to-r lg:from-transparent lg:to-[#040D1D]/50" />
+    </div>
+
+
+    {/* Event Details */}
+    <div className="lg:col-span-7 p-6 sm:p-10 flex flex-col justify-between space-y-6">
+
+      <div className="space-y-4">
+
+        {/* Title & Fee */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/[0.06] pb-4">
+
+          <h2 className="font-display font-black text-2xl sm:text-3xl text-white">
+            The Forever Athlete Run 2026
+          </h2>
+
+          <span className="font-display font-black text-2xl text-accent-gold">
+            ₹399
+          </span>
+
+        </div>
+
+
+        {/* Summary */}
+        <p className="text-white/40 text-sm leading-relaxed">
+          Challenge yourself to run, walk, or jog at your own pace, anywhere,
+          anytime. Achieve your fitness milestones and earn exclusive finisher
+          rewards that celebrate your dedication and achievement.
+        </p>
+
+
+        {/* Dates */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+
+          {/* Registration Closes */}
+          <div className="flex items-center gap-2 text-white/40 text-xs">
+
+            <Calendar className="h-4 w-4 text-red-400 shrink-0" />
+
+            <span>
+              <strong className="text-white/60">
+                Registration Closes:
+              </strong>{" "}
+              3 September 2026 at 11:59 PM IST
+            </span>
+
+          </div>
+
+
+          {/* Timeline */}
+          <div className="flex items-center gap-2 text-white/40 text-xs">
+
+            <Calendar className="h-4 w-4 text-blue-400 shrink-0" />
+
+            <span>
+              <strong className="text-white/60">
+                Timeline:
+              </strong>{" "}
+              4 September - 13 September 2026
+            </span>
+
+          </div>
+
+        </div>
+
+
+        {/* Inclusions */}
+        <div className="space-y-2 pt-4 border-t border-white/[0.06]">
+
+          <h4 className="font-display font-bold text-xs text-white/60 uppercase tracking-wider">
+            Inclusions:
+          </h4>
+
+          <ul className="space-y-1.5">
+
+            <li className="flex items-center gap-2 text-xs text-white/40">
+              <CheckCircle className="h-3.5 w-3.5 text-green-400 shrink-0" />
+              <span>
+                Premium Theme-Based Acrylic Trophy
+              </span>
+            </li>
+
+            <li className="flex items-center gap-2 text-xs text-white/40">
+              <CheckCircle className="h-3.5 w-3.5 text-green-400 shrink-0" />
+              <span>
+                Downloadable High-Res Digital Finisher Certificate
+              </span>
+            </li>
+
+            <li className="flex items-center gap-2 text-xs text-white/40">
+              <CheckCircle className="h-3.5 w-3.5 text-green-400 shrink-0" />
+              <span>
+                Free Premium Theme Based Stickers
+              </span>
+            </li>
+
+            <li className="flex items-center gap-2 text-xs text-white/40">
+              <CheckCircle className="h-3.5 w-3.5 text-green-400 shrink-0" />
+              <span>
+                Free Shipping and Tracking Across India
+              </span>
+            </li>
+
+            <li className="flex items-center gap-2 text-xs text-white/40">
+              <CheckCircle className="h-3.5 w-3.5 text-green-400 shrink-0" />
+              <span>
+                Proud Finisher Recognition
+              </span>
+            </li>
+
+          </ul>
+
+        </div>
+
+      </div>
+
+
+      {/* Bottom Buttons */}
+      <div className="space-y-3 pt-4 border-t border-white/[0.06]">
+
+        {/* Registration Closed - Disabled */}
+        <div className="w-full text-center py-3.5 rounded-xl bg-white/[0.04] border border-white/[0.08] cursor-not-allowed select-none">
+          <span className="font-display font-bold text-sm uppercase tracking-wider text-white/40">
+            Registration Closed
+          </span>
+        </div>
+
+
+        {/* Learn More - Disabled */}
+        <div className="w-full text-center py-3.5 rounded-xl bg-white/[0.04] border border-white/[0.08] cursor-not-allowed select-none">
+          <span className="font-display font-bold text-sm uppercase tracking-wider text-white/40">
+            Learn More
+          </span>
+        </div>
+
+
+        {/* Submit Your Record */}
+        {submissionOpen && (
+          <button
+            onClick={() => navigate('/submit-record')}
+            className="w-full font-display font-bold text-center uppercase tracking-wider py-3.5 rounded-xl bg-accent-gold hover:bg-yellow-400 text-[#040D1D] transition-colors duration-300 cursor-pointer flex items-center justify-center gap-2"
+          >
+            <Trophy className="h-5 w-5" />
+            Submit Your Record
+          </button>
+        )}
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
 
         {/* Section 1b: Previous Event Card */}
         <div className="relative">
