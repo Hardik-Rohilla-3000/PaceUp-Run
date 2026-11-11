@@ -5,132 +5,91 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const PAYMENT_OPTIONS = new Map([
-  [399, { couponCode: 'NIT 100', discountAmount: 100 }],
-  [449, { couponCode: 'Athlete50', discountAmount: 50 }],
-  [499, { couponCode: '', discountAmount: 0 }],
-])
-const VALID_GENDERS = new Set(['Male', 'Female', 'Other', 'Prefer not to say'])
-const VALID_EMPLOYMENT_STATUSES = new Set(['School Student', 'College Student', 'Working Professional'])
+const REGISTRATION_FEE = 499.00
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
-    const {
-      order_id,
-      name, email, phone, address, city, state, pincode, distance,
-      gender, age, employment_status,
-    } = await req.json()
-
+    const { order_id } = await req.json()
     if (!order_id) return json({ error: 'order_id is required' }, 400)
 
-    const CASHFREE_APP_ID = Deno.env.get('CASHFREE_APP_ID')
-    const CASHFREE_SECRET_KEY = Deno.env.get('CASHFREE_SECRET_KEY')
+    const PAYU_MERCHANT_KEY = Deno.env.get('PAYU_MERCHANT_KEY')
+    const PAYU_SALT = Deno.env.get('PAYU_SALT')
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL')
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-    if (!CASHFREE_APP_ID || !CASHFREE_SECRET_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    if (!PAYU_MERCHANT_KEY || !PAYU_SALT || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
       return json({ error: 'Required server configuration is missing' }, 500)
     }
 
-    const verifyResponse = await fetch(`https://api.cashfree.com/pg/orders/${order_id}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-version': '2023-08-01',
-        'x-client-id': CASHFREE_APP_ID,
-        'x-client-secret': CASHFREE_SECRET_KEY,
-      },
-    })
+    const txnid = String(order_id)
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
-    const orderData = await verifyResponse.json()
-    if (!verifyResponse.ok || orderData.order_status !== 'PAID') {
-      return json({ msg: 'Payment not verified', status: orderData.order_status }, 400)
-    }
-
-    const amountPaid = Number(orderData.order_amount)
-    const paymentOption = PAYMENT_OPTIONS.get(amountPaid)
-    if (!paymentOption) {
-      return json({ error: 'Unexpected payment amount' }, 400)
-    }
-
-    const { couponCode, discountAmount } = paymentOption
-    const supabase = createClient(
-      SUPABASE_URL,
-      SUPABASE_SERVICE_ROLE_KEY,
-    )
-
+    // The `order` function always saves a pending row first, with the coupon
+    // and discount it decided on. Anything without that row is rejected.
     const { data: existing, error: lookupError } = await supabase
       .from('registrations')
       .select('*')
-      .eq('cashfree_order_id', order_id)
+      .eq('cashfree_order_id', txnid)
       .maybeSingle()
 
     if (lookupError) return json({ error: 'DB lookup failed: ' + lookupError.message }, 500)
+    if (!existing) return json({ msg: 'Order not found' }, 404)
 
-    if (existing && existing.payment_status === 'paid') {
-      return paymentResponse(orderData, order_id, amountPaid, couponCode, discountAmount)
+    // Ask PayU directly whether this txnid was paid (never trust the redirect alone).
+    const isLive = (Deno.env.get('PAYU_MODE') || '').toLowerCase() === 'live'
+    const verifyUrl = isLive
+      ? 'https://info.payu.in/merchant/postservice.php?form=2'
+      : 'https://test.payu.in/merchant/postservice.php?form=2'
+    const command = 'verify_payment'
+    const hash = await sha512(`${PAYU_MERCHANT_KEY}|${command}|${txnid}|${PAYU_SALT}`)
+
+    const verifyResponse = await fetch(verifyUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ key: PAYU_MERCHANT_KEY, command, var1: txnid, hash }),
+    })
+
+    const verifyData = await verifyResponse.json().catch(() => null)
+    const orderData = verifyData?.transaction_details?.[txnid]
+    if (!verifyResponse.ok || !orderData || String(orderData.status).toLowerCase() !== 'success') {
+      return json({ msg: 'Payment not verified', status: orderData?.status ?? null }, 400)
     }
 
-    if (existing) {
+    // The amount PayU received must match exactly what `order` charged.
+    const couponCode = String(existing.coupon_code || '')
+    const discountAmount = Number(existing.discount_amount || 0)
+    const expectedAmount = REGISTRATION_FEE - discountAmount
+    const amountPaid = Number(orderData.transaction_amount ?? orderData.amt)
+    if (!Number.isFinite(amountPaid) || Math.abs(amountPaid - expectedAmount) > 0.001) {
+      return json({ error: 'Unexpected payment amount' }, 400)
+    }
+
+    if (existing.payment_status !== 'paid') {
       const { error } = await supabase
         .from('registrations')
-        .update({
-          payment_status: 'paid',
-          coupon_code: couponCode,
-          discount_amount: discountAmount,
-          amount_paid: amountPaid,
-        })
-        .eq('cashfree_order_id', order_id)
+        .update({ payment_status: 'paid', amount_paid: amountPaid })
+        .eq('cashfree_order_id', txnid)
 
       if (error) return json({ error: 'DB update failed: ' + error.message }, 500)
-    } else {
-      const parsedAge = Number(age)
-      if (!VALID_GENDERS.has(gender)) return json({ error: 'Invalid gender' }, 400)
-      if (!Number.isInteger(parsedAge) || parsedAge < 5 || parsedAge > 100) {
-        return json({ error: 'Age must be a whole number between 5 and 100' }, 400)
-      }
-      if (!VALID_EMPLOYMENT_STATUSES.has(employment_status)) {
-        return json({ error: 'Invalid employment status' }, 400)
-      }
-
-      const { error } = await supabase.from('registrations').insert({
-        name,
-        email,
-        phone,
-        gender,
-        age: parsedAge,
-        employment_status,
-        address,
-        city,
-        state,
-        pincode,
-        distance,
-        coupon_code: couponCode,
-        discount_amount: discountAmount,
-        amount_paid: amountPaid,
-        cashfree_order_id: order_id,
-        payment_status: 'paid',
-      })
-
-      if (error) return json({ error: 'DB insert failed: ' + error.message }, 500)
     }
 
-    return paymentResponse(orderData, order_id, amountPaid, couponCode, discountAmount)
+    return json({
+      msg: 'Payment verified',
+      orderId: txnid,
+      paymentId: orderData.mihpayid,
+      amountPaid,
+      couponCode,
+      discountAmount,
+    })
   } catch (error) {
     return json({ error: error instanceof Error ? error.message : String(error) }, 500)
   }
 })
 
-function paymentResponse(orderData: Record<string, unknown>, orderId: string, amountPaid: number, couponCode: string, discountAmount: number) {
-  return json({
-    msg: 'Payment verified',
-    orderId,
-    paymentId: orderData.cf_order_id,
-    amountPaid,
-    couponCode,
-    discountAmount,
-  })
+async function sha512(text: string) {
+  const digest = await crypto.subtle.digest('SHA-512', new TextEncoder().encode(text))
+  return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, '0')).join('')
 }
 
 function json(data: unknown, status = 200) {

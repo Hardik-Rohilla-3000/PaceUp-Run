@@ -453,7 +453,7 @@
 
 
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Mail, Phone, MapPin, CheckCircle2, ChevronRight, Award, Trophy, Loader2, XCircle, Lock } from 'lucide-react';
 
@@ -521,21 +521,21 @@ import { User, Mail, Phone, MapPin, CheckCircle2, ChevronRight, Award, Trophy, L
 // to the distance fix documented above.
 //
 // 1. Added required gender, age, and employment status fields with validation.
-// 2. Added NIT 100 for ₹100 off and Athlete50 for ₹50 off.
+// 2. Added discount coupons. Coupon codes are checked only by the server
+//    (`coupon` Edge Function); no coupon list is shipped to the browser.
 // 3. Checkout sends the new participant fields and coupon to the Edge Function.
 // 4. Price summaries, payment confirmation, and tickets use the final amount.
-// 5. The Edge Function remains the authority for the Cashfree order amount.
+// 5. The Edge Function remains the authority for the payment order amount.
 // ---------------------------------------------------------------------------
 const VALID_DISTANCE_IDS = new Set(['1600m', '3k', '5k', '10k', '21k']);
 const BASE_PRICE = 499;
-const COUPONS = {
-  NIT100: { code: 'NIT 100', discount: 100 },
-  ATHLETE50: { code: 'Athlete50', discount: 50 },
-};
 const VALID_GENDERS = new Set(['Male', 'Female', 'Other', 'Prefer not to say']);
 const VALID_EMPLOYMENT_STATUSES = new Set(['School Student', 'College Student', 'Working Professional']);
 
 const normalizeCoupon = (value = '') => value.trim().replace(/\s+/g, '').toUpperCase();
+
+// Shown as a big button on the "Registration Confirmed" screen.
+const WHATSAPP_GROUP_URL = 'https://whatsapp.com/channel/0029VbD5Aj684Om3hsOSTK2N';
 
 
 export default function Registration({ registerData, setRegisterData, registrationOpen = true }) {
@@ -550,8 +550,16 @@ export default function Registration({ registerData, setRegisterData, registrati
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [paymentFailed, setPaymentFailed]   = useState(false);
   const [paymentDetails, setPaymentDetails] = useState(null);
+  const ticketAutoDownloaded = useRef(false);
+  // Server-confirmed coupon: { input, code, discount }. Only counts while the
+  // text box still holds the same code that was checked.
+  const [couponResult, setCouponResult] = useState(null);
+  const [couponChecking, setCouponChecking] = useState(false);
   const navigate = useNavigate();
-  const appliedCoupon = COUPONS[normalizeCoupon(registerData.coupon_code)] || null;
+  const appliedCoupon =
+    couponResult && couponResult.input === normalizeCoupon(registerData.coupon_code || '')
+      ? couponResult
+      : null;
   const isCouponApplied = Boolean(appliedCoupon);
   const couponDiscount = appliedCoupon?.discount || 0;
   const payableAmount = BASE_PRICE - couponDiscount;
@@ -574,7 +582,7 @@ export default function Registration({ registerData, setRegisterData, registrati
     );
   }
 
-  // On mount: check if returning from Cashfree redirect
+  // On mount: check if returning from PayU (via the payu-return function redirect)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const orderId = params.get('order_id');
@@ -688,10 +696,43 @@ export default function Registration({ registerData, setRegisterData, registrati
     }
 
     if (registerData.coupon_code?.trim() && !isCouponApplied)
-      tempErrors.coupon_code = 'Invalid coupon code';
+      tempErrors.coupon_code = 'Tap Apply to use this coupon, or clear the box';
 
     setErrors(tempErrors);
     return Object.keys(tempErrors).length === 0;
+  };
+
+  // Ask the server whether this one coupon code is valid.
+  const applyCoupon = async () => {
+    const input = normalizeCoupon(registerData.coupon_code || '');
+    if (!input) return;
+    setCouponChecking(true);
+    try {
+      const API_URL  = import.meta.env.VITE_API_URL;
+      const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      const response = await fetch(`${API_URL}/coupon`, {
+        method:  'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey':        ANON_KEY,
+          'Authorization': `Bearer ${ANON_KEY}`,
+        },
+        body: JSON.stringify({ code: registerData.coupon_code }),
+      });
+      const data = response.ok ? await response.json() : null;
+      if (data?.valid && Number(data.discount) > 0) {
+        setCouponResult({ input, code: data.code, discount: Number(data.discount) });
+        setErrors(prev => ({ ...prev, coupon_code: '' }));
+      } else {
+        setCouponResult(null);
+        setErrors(prev => ({ ...prev, coupon_code: 'Invalid coupon code' }));
+      }
+    } catch {
+      setCouponResult(null);
+      setErrors(prev => ({ ...prev, coupon_code: 'Could not check coupon. Please try again.' }));
+    } finally {
+      setCouponChecking(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -742,17 +783,26 @@ export default function Registration({ registerData, setRegisterData, registrati
       };
       setRegisterData(checkoutData);
 
-      // Save form data before redirect (Cashfree navigates away)
+      // Save form data before redirect (PayU navigates away)
       localStorage.setItem('paceup_register_data', JSON.stringify(checkoutData));
 
-      const cashfree = window.Cashfree({
-        mode: import.meta.env.VITE_CASHFREE_MODE || 'production',
-      });
+      if (!orderData.payu_url || !orderData.payu_params) {
+        throw new Error('Payment details missing from order response');
+      }
 
-      cashfree.checkout({
-        paymentSessionId: orderData.payment_session_id,
-        returnUrl: `${window.location.origin}/register?order_id={order_id}&payment_status={payment_status}`,
+      // PayU checkout: POST the signed fields to PayU's hosted payment page.
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = orderData.payu_url;
+      Object.entries(orderData.payu_params).forEach(([key, value]) => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = key;
+        input.value = value;
+        form.appendChild(input);
       });
+      document.body.appendChild(form);
+      form.submit();
 
     } catch (err) {
       console.error('Checkout error:', err);
@@ -898,10 +948,22 @@ export default function Registration({ registerData, setRegisterData, registrati
       const a   = document.createElement('a');
       a.href     = url;
       a.download = `PaceUp-Ticket-${registerData.name || 'Registration'}.png`;
+      document.body.appendChild(a);
       a.click();
-      URL.revokeObjectURL(url);
+      a.remove();
+      // Revoking immediately can cancel the download on some mobile browsers.
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
     }, 'image/png');
   };
+
+  // Auto-download the registration ticket once, right after payment is verified.
+  useEffect(() => {
+    if (!paymentSuccess || ticketAutoDownloaded.current) return;
+    ticketAutoDownloaded.current = true;
+    const timer = setTimeout(() => downloadTicket(), 800);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paymentSuccess]);
 
   if (isValidating) {
     return (
@@ -976,6 +1038,30 @@ export default function Registration({ registerData, setRegisterData, registrati
         <p className="text-xs text-slate-400">
           A confirmation will be sent to <span className="font-medium">{registerData.email}</span>.
           Your trophy will be shipped to {registerData.city}, {registerData.state} – {registerData.pincode}.
+        </p>
+
+        {/* WhatsApp updates - big, prominent call to action */}
+        <a
+          href={WHATSAPP_GROUP_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block w-full rounded-2xl bg-green-500 hover:bg-green-400 text-white px-6 py-5 sm:py-6 shadow-lg shadow-green-500/30 ring-4 ring-green-500/20 transition-colors"
+        >
+          <span className="flex items-center justify-center gap-3">
+            <svg className="h-8 w-8 sm:h-9 sm:w-9 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+            </svg>
+            <span className="font-display font-black uppercase tracking-wide text-lg sm:text-2xl">
+              Join WhatsApp for Updates
+            </span>
+          </span>
+          <span className="block mt-1 text-sm text-white/90">
+            Run dates, proof submission and trophy shipping updates come here first.
+          </span>
+        </a>
+
+        <p className="text-xs text-slate-400">
+          Your registration ticket has been downloaded. Didn't get it? Use the button below.
         </p>
 
         <button
@@ -1343,22 +1429,33 @@ export default function Registration({ registerData, setRegisterData, registrati
             <label htmlFor="coupon_code" className="block text-xs font-bold uppercase tracking-wider text-slate-550 dark:text-slate-400">
               Coupon Code
             </label>
-            <input
-              type="text"
-              id="coupon_code"
-              name="coupon_code"
-              value={registerData.coupon_code || ''}
-              onChange={handleInputChange}
-              placeholder="Enter coupon code"
-              maxLength={20}
-              className={`w-full px-4 py-3 rounded-xl border bg-slate-50 dark:bg-slate-850 dark:text-black transition-colors duration-200 outline-none text-sm  ${
-                errors.coupon_code
-                  ? 'border-red-500 dark:border-red-500'
-                  : isCouponApplied
-                    ? 'border-green-500 dark:border-green-500'
-                    : 'border-slate-200 dark:border-slate-750 focus:border-primary-royal dark:focus:border-accent-gold'
-              }`}
-            />
+            <div className="flex gap-2">
+              <input
+                type="text"
+                id="coupon_code"
+                name="coupon_code"
+                value={registerData.coupon_code || ''}
+                onChange={handleInputChange}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); applyCoupon(); } }}
+                placeholder="Enter coupon code"
+                maxLength={20}
+                className={`flex-1 min-w-0 px-4 py-3 rounded-xl border bg-slate-50 dark:bg-slate-850 dark:text-black transition-colors duration-200 outline-none text-sm  ${
+                  errors.coupon_code
+                    ? 'border-red-500 dark:border-red-500'
+                    : isCouponApplied
+                      ? 'border-green-500 dark:border-green-500'
+                      : 'border-slate-200 dark:border-slate-750 focus:border-primary-royal dark:focus:border-accent-gold'
+                }`}
+              />
+              <button
+                type="button"
+                onClick={applyCoupon}
+                disabled={couponChecking || !registerData.coupon_code?.trim() || isCouponApplied}
+                className="shrink-0 px-5 py-3 rounded-xl bg-primary-navy dark:bg-accent-gold text-white dark:text-primary-navy font-bold text-sm uppercase tracking-wider transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {couponChecking ? <Loader2 className="h-4 w-4 animate-spin" /> : isCouponApplied ? 'Applied' : 'Apply'}
+              </button>
+            </div>
             {errors.coupon_code && <p className="text-red-500 text-xs">{errors.coupon_code}</p>}
             {isCouponApplied && !errors.coupon_code && (
               <p className="text-green-600 dark:text-green-400 text-xs font-semibold">
