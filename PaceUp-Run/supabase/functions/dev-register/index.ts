@@ -1,5 +1,5 @@
 // Edge Function: dev-register
-// DEV ONLY - skips Cashfree, directly inserts a "paid" registration.
+// DEV ONLY - skips payment, directly inserts a "paid" registration.
 // Remove or disable this before going live with real payments.
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
@@ -11,12 +11,26 @@ const corsHeaders = {
 
 const VALID_GENDERS = new Set(['Male', 'Female', 'Other', 'Prefer not to say'])
 const VALID_EMPLOYMENT_STATUSES = new Set(['School Student', 'College Student', 'Working Professional'])
-const COUPONS: Record<string, { code: string; discount: number }> = {
-  NIT100: { code: 'NIT 100', discount: 100 },
-  Athlete50: { code: 'Athlete50', discount: 50 },
-}
+const REGISTRATION_FEE = 499
 
-const normalizeCoupon = (value: unknown) => String(value ?? '').trim().replace(/\s+/g, '').toUpperCase()
+// Coupons live only in the `coupon` Edge Function (not committed to this repo).
+async function lookupCoupon(supabaseUrl: string, serviceKey: string, code: string) {
+  const response = await fetch(`${supabaseUrl}/functions/v1/coupon`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': serviceKey,
+      'Authorization': `Bearer ${serviceKey}`,
+    },
+    body: JSON.stringify({ code }),
+  })
+  if (!response.ok) throw new Error('Coupon service unavailable')
+  const data = await response.json()
+  if (!data?.valid) return null
+  const discount = Number(data.discount)
+  if (!Number.isFinite(discount) || discount <= 0 || discount >= REGISTRATION_FEE) return null
+  return { code: String(data.code), discount }
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
@@ -41,19 +55,21 @@ Deno.serve(async (req) => {
       return json({ error: 'Invalid employment status' }, 400)
     }
 
-    const suppliedCoupon = String(coupon_code ?? '').trim()
-    const coupon = COUPONS[normalizeCoupon(suppliedCoupon)]
-    if (suppliedCoupon && !coupon) return json({ error: 'Invalid coupon code' }, 400)
-
-    const appliedCouponCode = coupon?.code || ''
-    const discountAmount = coupon?.discount || 0
-    const amountPaid = 499 - discountAmount
-
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL')
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
     if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
       return json({ error: 'Required server configuration is missing' }, 500)
     }
+
+    const suppliedCoupon = String(coupon_code ?? '').trim()
+    const coupon = suppliedCoupon
+      ? await lookupCoupon(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, suppliedCoupon)
+      : null
+    if (suppliedCoupon && !coupon) return json({ error: 'Invalid coupon code' }, 400)
+
+    const appliedCouponCode = coupon?.code || ''
+    const discountAmount = coupon?.discount || 0
+    const amountPaid = REGISTRATION_FEE - discountAmount
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 

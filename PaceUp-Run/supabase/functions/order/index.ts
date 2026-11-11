@@ -6,14 +6,28 @@ const corsHeaders = {
 }
 
 const REGISTRATION_FEE = 499.00
-const COUPONS: Record<string, { code: string; discount: number }> = {
-  NIT100: { code: 'NIT 100', discount: 100.00 },
-  Athlete50: { code: 'Athlete50', discount: 50.00 },
-}
 const VALID_GENDERS = new Set(['Male', 'Female', 'Other', 'Prefer not to say'])
 const VALID_EMPLOYMENT_STATUSES = new Set(['School Student', 'College Student', 'Working Professional'])
 
-const normalizeCoupon = (value: unknown) => String(value ?? '').trim().replace(/\s+/g, '').toUpperCase()
+// Coupons are NOT stored in this repo. They live only in the `coupon` Edge
+// Function, which is deployed straight to Supabase and never committed.
+async function lookupCoupon(supabaseUrl: string, serviceKey: string, code: string) {
+  const response = await fetch(`${supabaseUrl}/functions/v1/coupon`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': serviceKey,
+      'Authorization': `Bearer ${serviceKey}`,
+    },
+    body: JSON.stringify({ code }),
+  })
+  if (!response.ok) throw new Error('Coupon service unavailable')
+  const data = await response.json()
+  if (!data?.valid) return null
+  const discount = Number(data.discount)
+  if (!Number.isFinite(discount) || discount <= 0 || discount >= REGISTRATION_FEE) return null
+  return { code: String(data.code), discount }
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
@@ -34,50 +48,53 @@ Deno.serve(async (req) => {
       return json({ error: 'Invalid employment status' }, 400)
     }
 
+    const PAYU_MERCHANT_KEY = Deno.env.get('PAYU_MERCHANT_KEY')
+    const PAYU_SALT = Deno.env.get('PAYU_SALT')
+    const SUPABASE_URL = Deno.env.get('SUPABASE_URL')
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+    if (!PAYU_MERCHANT_KEY || !PAYU_SALT || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+      return json({ error: 'Required server configuration is missing' }, 500)
+    }
+
     const suppliedCoupon = String(coupon_code ?? '').trim()
-    const coupon = COUPONS[normalizeCoupon(suppliedCoupon)]
+    const coupon = suppliedCoupon
+      ? await lookupCoupon(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, suppliedCoupon)
+      : null
     if (suppliedCoupon && !coupon) return json({ error: 'Invalid coupon code' }, 400)
 
     const appliedCouponCode = coupon?.code || ''
     const discountAmount = coupon?.discount || 0
     const orderAmount = REGISTRATION_FEE - discountAmount
 
-    const CASHFREE_APP_ID = Deno.env.get('CASHFREE_APP_ID')
-    const CASHFREE_SECRET_KEY = Deno.env.get('CASHFREE_SECRET_KEY')
-    const SUPABASE_URL = Deno.env.get('SUPABASE_URL')
-    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-    if (!CASHFREE_APP_ID || !CASHFREE_SECRET_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-      return json({ error: 'Required server configuration is missing' }, 500)
-    }
-    const order_id = `paceup_${Date.now()}`
-    const customer_id = `cust_${Date.now()}`
+    // PAYU_MODE secret: "live" uses the real gateway, anything else uses PayU test mode.
+    const isLive = (Deno.env.get('PAYU_MODE') || '').toLowerCase() === 'live'
+    const payuUrl = isLive ? 'https://secure.payu.in/_payment' : 'https://test.payu.in/_payment'
 
-    const response = await fetch('https://api.cashfree.com/pg/orders', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-version': '2023-08-01',
-        'x-client-id': CASHFREE_APP_ID,
-        'x-client-secret': CASHFREE_SECRET_KEY,
-      },
-      body: JSON.stringify({
-        order_id,
-        order_amount: orderAmount,
-        order_currency: 'INR',
-        customer_details: {
-          customer_id,
-          customer_name: customer_name || 'Participant',
-          customer_email: customer_email || 'participant@paceuprun.in',
-          customer_phone: customer_phone || '9999999999',
-        },
-        order_meta: {
-          return_url: 'https://www.paceuprun.in/register?order_id={order_id}&payment_status={payment_status}',
-        },
-      }),
-    })
+    // PayU sends the payment result back to this function as a form POST,
+    // which then redirects the runner to /register?order_id=... on the same
+    // site address they started from (payu-return only allows known sites).
+    const origin = req.headers.get('origin') || ''
+    const returnUrl = `${SUPABASE_URL}/functions/v1/payu-return` +
+      (origin ? `?site=${encodeURIComponent(origin)}` : '')
 
-    const order = await response.json()
-    if (!response.ok) return json(order, 400)
+    // Timestamp + random part, so order IDs cannot be guessed (validate returns
+    // the runner's details for a paid order ID). 23 chars, within PayU's limit.
+    const randomPart = Array.from(crypto.getRandomValues(new Uint8Array(2)))
+      .map((b) => b.toString(16).padStart(2, '0')).join('')
+    const txnid = `paceup${Date.now()}${randomPart}`
+    const amount = orderAmount.toFixed(2)
+    const productinfo = 'PaceUp Run Registration'
+    // "|" would break the PayU hash string, so strip it from user-entered values.
+    const clean = (value: unknown, fallback: string) =>
+      String(value ?? '').replace(/\|/g, ' ').trim() || fallback
+    const firstname = clean(customer_name, 'Participant')
+    const email = clean(customer_email, 'participant@paceuprun.in')
+    const phone = clean(customer_phone, '9999999999')
+
+    // key|txnid|amount|productinfo|firstname|email|udf1..udf5||||||SALT
+    const hash = await sha512(
+      `${PAYU_MERCHANT_KEY}|${txnid}|${amount}|${productinfo}|${firstname}|${email}|||||||||||${PAYU_SALT}`,
+    )
 
     const supabase = createClient(
       SUPABASE_URL,
@@ -99,15 +116,28 @@ Deno.serve(async (req) => {
       coupon_code: appliedCouponCode,
       discount_amount: discountAmount,
       amount_paid: null,
-      cashfree_order_id: order.order_id,
+      // Column name kept from Cashfree days; it now stores the PayU txnid.
+      cashfree_order_id: txnid,
       payment_status: 'pending',
     })
 
     if (insertError) return json({ error: 'DB insert failed: ' + insertError.message }, 500)
 
     return json({
-      payment_session_id: order.payment_session_id,
-      order_id: order.order_id,
+      payu_url: payuUrl,
+      payu_params: {
+        key: PAYU_MERCHANT_KEY,
+        txnid,
+        amount,
+        productinfo,
+        firstname,
+        email,
+        phone,
+        surl: returnUrl,
+        furl: returnUrl,
+        hash,
+      },
+      order_id: txnid,
       coupon_code: appliedCouponCode,
       discount_amount: discountAmount,
       amount: orderAmount,
@@ -116,6 +146,11 @@ Deno.serve(async (req) => {
     return json({ error: error instanceof Error ? error.message : String(error) }, 500)
   }
 })
+
+async function sha512(text: string) {
+  const digest = await crypto.subtle.digest('SHA-512', new TextEncoder().encode(text))
+  return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, '0')).join('')
+}
 
 function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {

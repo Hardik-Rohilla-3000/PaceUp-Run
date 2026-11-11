@@ -217,6 +217,7 @@ import TermsAndConditions from './pages/TermsAndConditions';
 import RefundPolicy from './pages/RefundPolicy';
 import SubmitRecord from './pages/SubmitRecord';
 import Gallery from './pages/Gallery';
+import NotFound from './pages/NotFound';
 
 // Payment import removed - Payment page has been removed from the app.
 // Re-add when Razorpay integration is ready:
@@ -316,7 +317,8 @@ export default function App() {
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/submit-record" element={<SubmitRecord />} />
             <Route path="/event/confidential/admin-access" element={<AdminAccess />} />
-            <Route path="*" element={<Home />} />
+            {/* Any unknown URL (e.g. /abc, /register/xyz) shows a 404 page */}
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
 
