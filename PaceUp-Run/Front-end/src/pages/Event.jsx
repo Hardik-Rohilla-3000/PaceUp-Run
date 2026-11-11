@@ -206,7 +206,7 @@ export default function Event({ registrationOpen = true }) {
   }, []);
 
   const activeEvent = {
-    title: 'The Forever Athlete Run 2026',
+    title: 'Winter Arc Challenge 2026',
     fee: '₹499',
     timeline: '04 September - 13 September 2026',
     registrationCloses: '3 september 2026 at 11:59 PM IST',
@@ -236,7 +236,7 @@ export default function Event({ registrationOpen = true }) {
       {/* Hero main */}
       <div className="relative h-[320px] sm:h-[420px] overflow-hidden">
         <img
-          src="/main.png"
+          src="/main(3).png"
           alt="The Forever Athlete Run 2026"
           className="w-full h-full object-cover"
         />
@@ -246,10 +246,10 @@ export default function Event({ registrationOpen = true }) {
             Featured Challenge
           </span>
           <h1 className="font-display font-black text-3xl sm:text-5xl lg:text-6xl text-white leading-tight">
-           The Forever Athlete Run 2026
+           Winter Arc Challenge 2026
           </h1>
           <p className="text-white/50 max-w-xl mx-auto mt-3 text-sm sm:text-base">
-            A nationwide virtual running challenge celebrating endurance, fitness, and the spirit of the athlete.
+            Embrace the cold, challenge your limits, and build an unbreakable mindset with every step this winter.
           </p>
         </div>
       </div>
@@ -279,15 +279,15 @@ export default function Event({ registrationOpen = true }) {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-20 py-16">
 
 
- {/* Section : Upcoming Event Card(winter arc) */}
+ {/* Section : live Event Card(winter arc) */}
         <div className="relative">
           <span className="inline-block font-display font-bold text-[10px] tracking-[0.25em] uppercase text-green-400 border border-green-400/30 bg-green-400/10 px-4 py-1.5 rounded-full mb-4">
-            Upcoming Event
+            Live Event
           </span>
           <div className="bg-white/[0.02] border border-white/[0.07] rounded-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-12">
             <div className="lg:col-span-5 relative min-h-[240px] lg:min-h-[420px]">
               <img
-                src="/event-card.png"
+                src="/winterarc.png"
                 alt="Run for India's Glory main"
                 className="w-full h-full object-cover absolute inset-0"
               />
@@ -369,8 +369,8 @@ export default function Event({ registrationOpen = true }) {
 <div className="relative">
 
   {/* Upcoming Event Label */}
-  <span className="inline-block font-display font-bold text-[10px] tracking-[0.25em] uppercase text-green-400 border border-green-400/30 bg-green-400/10 px-4 py-1.5 rounded-full mb-4">
-    Upcoming Event
+  <span className="inline-block font-display font-bold text-[10px] tracking-[0.25em] uppercase text-white/50 border border-white/20 bg-white/5 bg-green-400/10 px-4 py-1.5 rounded-full mb-4">
+    Previous Event
   </span>
 
   <div className="bg-white/[0.02] border border-white/[0.07] rounded-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-12">
@@ -400,7 +400,7 @@ export default function Event({ registrationOpen = true }) {
           </h2>
 
           <span className="font-display font-black text-2xl text-accent-gold">
-            ₹399
+            ₹499
           </span>
 
         </div>

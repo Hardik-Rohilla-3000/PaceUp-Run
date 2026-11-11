@@ -590,7 +590,7 @@ export default function Home({ registrationOpen = true }) {
       {/* ===== HERO ===== */}
       <section ref={heroRef} className="relative h-screen flex items-start pt-28 sm:items-center sm:pt-0 overflow-hidden">
         <motion.div className="absolute inset-0" style={{ y: heroImgY, scale: heroScale }}>
-          <img src="/runner_hero.png" alt="" className="w-full h-full object-cover" />
+          <img src="/runner_hero2.png" alt="" className="w-full h-full object-cover" />
         </motion.div>
 
         <div className="absolute inset-0 bg-gradient-to-r from-[#040D1D] via-[#040D1D]/90 to-[#040D1D]/20" />
@@ -735,7 +735,7 @@ export default function Home({ registrationOpen = true }) {
             >
               <div className="relative rounded-2xl overflow-hidden border border-white/[0.07] bg-white/[0.02]">
                 <img
-                  src="/acrylic_trophy.png"
+                  src="/winterarc.png"
                   alt="PaceUp Run Acrylic Trophy"
                   className="w-full h-auto object-contain p-6 sm:p-10"
                 />
@@ -849,7 +849,7 @@ export default function Home({ registrationOpen = true }) {
             <motion.div variants={fadeUp}>
               <div className="group h-full rounded-3xl overflow-hidden border border-slate-800 hover:border-accent-gold/20 transition-all duration-500 bg-gradient-to-br from-[#0a1628] to-[#040D1D]">
                 <div className="relative aspect-square overflow-hidden">
-                  <img src="/acrylic_trophy.png" alt="Trophy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                  <img src="/winterarc.png" alt="Trophy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                   <div className="absolute top-4 left-4">
                     <span className="px-3 py-1 rounded-full bg-accent-gold/90 text-primary-navy text-[10px] font-bold uppercase tracking-wider">Premium</span>
                   </div>

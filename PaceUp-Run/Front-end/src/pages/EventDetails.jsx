@@ -328,7 +328,7 @@ export default function EventDetails({ registrationOpen = true }) {
 
         <div className="relative rounded-3xl overflow-hidden h-[250px] sm:h-[400px] bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-lg">
           <img 
-            src="/main.png" 
+            src="/main(3).png" 
             alt="Virtual Run Challenge 2026 Detailed main" 
             className="w-full h-full object-cover opacity-50"
           />
@@ -339,10 +339,10 @@ export default function EventDetails({ registrationOpen = true }) {
               Event Details
             </span>
             <h1 className="font-display font-black text-3xl sm:text-5xl tracking-tight text-white leading-tight">
-              The Forever Athlete Run 2026
+              Winter Arc Challenge 2026
             </h1>
             <p className="text-slate-350 text-xs sm:text-sm max-w-2xl font-light">
-             A nationwide virtual running challenge celebrating endurance, fitness, and the spirit of the athlete.
+             Embrace the cold, challenge your limits, and build an unbreakable mindset with every step this winter.
             </p>
           </div>
         </div>
@@ -360,11 +360,9 @@ export default function EventDetails({ registrationOpen = true }) {
               Challenge Description
             </h2>
             <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
-              Forever Athlete Run 2026 is a nationwide virtual running challenge that brings together fitness enthusiasts, passionate runners, and athletes of all levels in a celebration of endurance, determination, and an active lifestyle. Designed for participants of all fitness levels, the event offers multiple distance categories including 1600m, 3K, 5K, 10K, and 21K, allowing everyone to take part and challenge themselves.
-            </p>
+           Winter Arc Challenge 2026 is a nationwide virtual running challenge that brings together fitness enthusiasts, passionate runners, and athletes of all levels to celebrate discipline, determination, and self-improvement. With multiple distance categories including 1600m, 3K, 5K, 10K, and 21K, the challenge allows everyone to participate and push their limits.  </p>
             <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
-              More than just a run, this event is an opportunity to embrace a healthier lifestyle and celebrate the athlete within you. Whether you're a beginner taking your first steps or an experienced runner pursuing a new milestone, every kilometer completed reflects dedication, perseverance, and the mindset of a forever athlete. Join runners from across the country and be part of a movement that celebrates fitness, achievement, consistency, and the passion to keep moving forward.
-            </p>
+          More than just a run, it's an opportunity to embrace discipline, build consistency, and become stronger throughout the winter season. Every kilometer reflects dedication, perseverance, and the mindset of building your strongest self this winter. </p>
           </div>
 
           {/* Rules and Guidelines */}
@@ -496,7 +494,7 @@ export default function EventDetails({ registrationOpen = true }) {
             <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-slate-800 space-y-6 shadow-md">
               <div className="relative group overflow-hidden rounded-2xl w-full h-[240px] sm:h-[300px] flex items-center justify-center bg-slate-50 dark:bg-[#040D1D]">
                 <img 
-                  src="/acrylic_trophy.png" 
+                  src="/winterarc.png" 
                   alt="Premium Acrylic Trophy Mockup Details" 
                   className="max-h-full max-w-full object-contain transform group-hover:scale-105 transition-all duration-300"
                 />
