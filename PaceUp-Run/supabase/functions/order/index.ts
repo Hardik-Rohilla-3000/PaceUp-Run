@@ -71,10 +71,17 @@ Deno.serve(async (req) => {
     const payuUrl = isLive ? 'https://secure.payu.in/_payment' : 'https://test.payu.in/_payment'
 
     // PayU sends the payment result back to this function as a form POST,
-    // which then redirects the runner to /register?order_id=...
-    const returnUrl = `${SUPABASE_URL}/functions/v1/payu-return`
+    // which then redirects the runner to /register?order_id=... on the same
+    // site address they started from (payu-return only allows known sites).
+    const origin = req.headers.get('origin') || ''
+    const returnUrl = `${SUPABASE_URL}/functions/v1/payu-return` +
+      (origin ? `?site=${encodeURIComponent(origin)}` : '')
 
-    const txnid = `paceup${Date.now()}`
+    // Timestamp + random part, so order IDs cannot be guessed (validate returns
+    // the runner's details for a paid order ID). 23 chars, within PayU's limit.
+    const randomPart = Array.from(crypto.getRandomValues(new Uint8Array(2)))
+      .map((b) => b.toString(16).padStart(2, '0')).join('')
+    const txnid = `paceup${Date.now()}${randomPart}`
     const amount = orderAmount.toFixed(2)
     const productinfo = 'PaceUp Run Registration'
     // "|" would break the PayU hash string, so strip it from user-entered values.

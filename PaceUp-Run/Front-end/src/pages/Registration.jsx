@@ -589,40 +589,72 @@ export default function Registration({ registerData, setRegisterData, registrati
 
     if (!orderId) return;
 
-    // Restore saved form data
-    const saved = localStorage.getItem('paceup_register_data');
-    if (saved) {
-      const data = JSON.parse(saved);
-      setRegisterData(data);
-      setDistance(data.distance);
-      setIsValidating(true);
-
-      const API_URL  = import.meta.env.VITE_API_URL;
-      const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-      fetch(`${API_URL}/validate`, {
-        method:  'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey':        ANON_KEY,
-          'Authorization': `Bearer ${ANON_KEY}`,
-        },
-        body: JSON.stringify({ order_id: orderId, ...data, address: [data.address_line1, data.address_line2, data.address_line3].filter(Boolean).join(', ') }),
-      })
-        .then(async r => {
-          const json = await r.json();
-          if (r.ok) {
-            setPaymentDetails(json);
-            setPaymentSuccess(true);
-            localStorage.removeItem('paceup_register_data');
-          } else {
-            setPaymentFailed(true);
-          }
-          navigate('/register', { replace: true });
-        })
-        .catch(() => setPaymentFailed(true))
-        .finally(() => setIsValidating(false));
+    // Form data saved before the PayU redirect. It can be missing (different
+    // domain, e.g. vercel.app vs www, another browser, cleared storage), so the
+    // server's copy of the registration is used as the fallback. Never wait
+    // on localStorage alone, or the page spins forever.
+    let saved = null;
+    try {
+      saved = JSON.parse(localStorage.getItem('paceup_register_data') || 'null');
+    } catch {
+      saved = null;
     }
+    if (saved) {
+      setRegisterData(saved);
+      setDistance(saved.distance);
+    }
+    setIsValidating(true);
+
+    const API_URL  = import.meta.env.VITE_API_URL;
+    const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 45000);
+
+    fetch(`${API_URL}/validate`, {
+      method:  'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey':        ANON_KEY,
+        'Authorization': `Bearer ${ANON_KEY}`,
+      },
+      body: JSON.stringify({ order_id: orderId }),
+      signal: controller.signal,
+    })
+      .then(async r => {
+        const json = await r.json().catch(() => ({}));
+        if (r.ok) {
+          const reg = json.registration || {};
+          const restored = {
+            ...(saved || {}),
+            name:          saved?.name          || reg.name     || '',
+            email:         saved?.email         || reg.email    || '',
+            phone:         saved?.phone         || reg.phone    || '',
+            distance:      saved?.distance      || reg.distance || '',
+            address_line1: saved?.address_line1 || reg.address  || '',
+            address_line2: saved?.address_line2 || '',
+            address_line3: saved?.address_line3 || '',
+            city:          saved?.city          || reg.city     || '',
+            state:         saved?.state         || reg.state    || '',
+            pincode:       saved?.pincode       || reg.pincode  || '',
+            coupon_code:   json.couponCode || '',
+            discount_amount: json.discountAmount || 0,
+            amount_paid:   json.amountPaid,
+          };
+          setRegisterData(restored);
+          setDistance(restored.distance);
+          setPaymentDetails(json);
+          setPaymentSuccess(true);
+          localStorage.removeItem('paceup_register_data');
+        } else {
+          setPaymentFailed(true);
+        }
+        navigate('/register', { replace: true });
+      })
+      .catch(() => setPaymentFailed(true))
+      .finally(() => {
+        clearTimeout(timeout);
+        setIsValidating(false);
+      });
   }, []);
 
   useEffect(() => {

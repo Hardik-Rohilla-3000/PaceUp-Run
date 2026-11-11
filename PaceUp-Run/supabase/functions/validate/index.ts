@@ -99,6 +99,18 @@ Deno.serve(async (req) => {
       amountPaid,
       couponCode,
       discountAmount,
+      // Lets the success page and ticket render even when the browser lost
+      // the form data it saved before going to PayU.
+      registration: {
+        name: existing.name ?? '',
+        email: existing.email ?? '',
+        phone: existing.phone ?? '',
+        distance: existing.distance ?? '',
+        address: existing.address ?? '',
+        city: existing.city ?? '',
+        state: existing.state ?? '',
+        pincode: existing.pincode ?? '',
+      },
     })
   } catch (error) {
     return json({ error: error instanceof Error ? error.message : String(error) }, 500)

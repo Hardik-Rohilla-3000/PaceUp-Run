@@ -7,8 +7,21 @@
 // verification turned off:
 //   supabase functions deploy payu-return --no-verify-jwt
 
+// Sites the runner may be sent back to. Anything else falls back to SITE_URL,
+// so this can never be used to redirect people to a random website.
+const ALLOWED_SITES = new Set([
+  'https://www.paceuprun.in',
+  'https://paceuprun.in',
+  'https://pace-up-run.vercel.app',
+  'http://localhost:5173',
+])
+
 Deno.serve(async (req) => {
-  const SITE_URL = (Deno.env.get('SITE_URL') || 'https://www.paceuprun.in').replace(/\/+$/, '')
+  const defaultSite = (Deno.env.get('SITE_URL') || 'https://www.paceuprun.in').replace(/\/+$/, '')
+  const requestedSite = (new URL(req.url).searchParams.get('site') || '').replace(/\/+$/, '')
+  const SITE_URL = ALLOWED_SITES.has(requestedSite) || requestedSite === defaultSite
+    ? requestedSite
+    : defaultSite
 
   let txnid = ''
   let status = ''
