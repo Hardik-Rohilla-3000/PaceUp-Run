@@ -287,11 +287,11 @@ export default function Event({ registrationOpen = true }) {
           <div className="bg-white/[0.02] border border-white/[0.07] rounded-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-12">
             <div className="lg:col-span-5 relative min-h-[240px] lg:min-h-[420px]">
               <img
-                src="/winterarc.png"
+                src="/event-card.png"
                 alt="Run for India's Glory main"
                 className="w-full h-full object-cover absolute inset-0"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#040D1D] via-transparent to-transparent lg:bg-gradient-to-r lg:from-transparent lg:to-[#040D1D]/50" />
+              <div className="Athlete50" />
             </div>
 
             <div className="lg:col-span-7 p-6 sm:p-10 flex flex-col justify-between space-y-6">
@@ -378,12 +378,12 @@ export default function Event({ registrationOpen = true }) {
     {/* Event Image */}
     <div className="lg:col-span-5 relative min-h-[240px] lg:min-h-[420px]">
       <img
-        src="/event-card.png"
+        src="/forever.png"
         alt="The Forever Athlete Run 2026"
         className="w-full h-full object-cover absolute inset-0 grayscale"
       />
 
-      <div className="absolute inset-0 bg-gradient-to-t from-[#040D1D] via-transparent to-transparent lg:bg-gradient-to-r lg:from-transparent lg:to-[#040D1D]/50" />
+      <div className="Athlete50" />
     </div>
 
 
@@ -550,7 +550,7 @@ export default function Event({ registrationOpen = true }) {
                 alt="Previous Event main"
                 className="w-full h-full object-cover absolute inset-0 grayscale"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#040D1D] via-transparent to-transparent lg:bg-gradient-to-r lg:from-transparent lg:to-[#040D1D]/50" />
+              <div className="Athlete50" />
             </div>
 
             <div className="lg:col-span-7 p-6 sm:p-10 flex flex-col justify-between space-y-6">
