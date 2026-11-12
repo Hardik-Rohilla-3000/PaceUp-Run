@@ -596,7 +596,7 @@ export default function Home({ registrationOpen = true }) {
       {/* ===== HERO ===== */}
       <section ref={heroRef} className="relative h-screen flex items-start pt-28 sm:items-center sm:pt-0 overflow-hidden">
         <motion.div className="absolute inset-0" style={{ y: heroImgY, scale: heroScale }}>
-          <img src="/runner_hero.png" alt="" className="w-full h-full object-cover" />
+          <img src="/runner_hero3.png" alt="" className="w-full h-full object-cover" />
         </motion.div>
 
         <div className="absolute inset-0 bg-gradient-to-r from-[#040D1D] via-[#040D1D]/90 to-[#040D1D]/20" />
