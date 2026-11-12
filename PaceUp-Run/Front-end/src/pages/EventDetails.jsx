@@ -309,7 +309,7 @@ export default function EventDetails({ registrationOpen = true }) {
 
   const benefits = [
     { title: 'Keep Motivated', desc: 'A tangible fitness challenge to push your boundaries and stay consistent with healthy habits.' },
-    { title: 'Physical Trophy Cabinet', desc: 'No cheap metal medals. Receive a stunning 6.5-inch themed acrylic trophy that catches the light.' },
+    { title: 'Physical Trophy Cabinet', desc: 'No cheap metal medals. Receive a stunning 5-inch themed acrylic trophy that catches the light.' },
     { title: 'Social Bragging Rights', desc: 'Download a personalized certificate and showcase your achievement to friends and family.' },
     { title: 'Completely Safe & Flexible', desc: 'Zero crowd risk. Run on your timeline, on your favorite local track, or right in your gym.' },
   ];
@@ -508,7 +508,7 @@ export default function EventDetails({ registrationOpen = true }) {
                   Our themed trophies are crafted from durable, thick clear acrylic. They feature a vibrant event-themed design showcasing the challenge name and distance completed. Made entirely from premium acrylic with a stylish wooden veneer finish, they create a striking keepsake to celebrate your achievement.
                 </p>
                 <ul className="grid grid-cols-2 gap-2 text-xs text-slate-500 dark:text-slate-450 pt-2 border-t border-slate-100 dark:border-slate-800">
-                  <li>📐 Height: 6.5 inches</li>
+                  <li>📐 Height: 5 inches</li>
                   <li>🪵 Base: Wood veneer</li>
                   <li>✍️ Inscription: Event Label</li>
                   <li>🛡️ Material: Clear acrylic plate</li>
