@@ -1457,7 +1457,7 @@ export default function Registration({ registerData, setRegisterData, registrati
             </div>
           </div>
 
-          <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+          {/* <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
             <label htmlFor="coupon_code" className="block text-xs font-bold uppercase tracking-wider text-slate-550 dark:text-slate-400">
               Coupon Code
             </label>
@@ -1494,7 +1494,7 @@ export default function Registration({ registerData, setRegisterData, registrati
                 {appliedCoupon.code} applied. You saved ₹{couponDiscount}.
               </p>
             )}
-          </div>
+          </div> */}
 
           <div className="pt-4 flex gap-3">
             <button
