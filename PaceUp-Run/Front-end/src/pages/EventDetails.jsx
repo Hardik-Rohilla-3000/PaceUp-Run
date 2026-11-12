@@ -494,7 +494,7 @@ export default function EventDetails({ registrationOpen = true }) {
             <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-slate-800 space-y-6 shadow-md">
               <div className="relative group overflow-hidden rounded-2xl w-full h-[240px] sm:h-[300px] flex items-center justify-center bg-slate-50 dark:bg-[#040D1D]">
                 <img 
-                  src="/event-card.png" 
+                  src="/winterarc.png" 
                   alt="Premium Acrylic Trophy Mockup Details" 
                   className="max-h-full max-w-full object-contain transform group-hover:scale-105 transition-all duration-300"
                 />
