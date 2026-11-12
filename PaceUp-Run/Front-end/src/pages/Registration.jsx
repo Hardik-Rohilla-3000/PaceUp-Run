@@ -890,7 +890,7 @@ export default function Registration({ registerData, setRegisterData, registrati
 
     ctx.fillStyle = slate;
     ctx.font = '13px system-ui, sans-serif';
-    ctx.fillText("Run for India's Glory 2026  -  Virtual Challenge", 40, 80);
+    ctx.fillText("Winter Arc Challenge 2026  -  Virtual Challenge", 40, 80);
 
     // Divider
     ctx.strokeStyle = panel;
@@ -1118,7 +1118,7 @@ export default function Registration({ registerData, setRegisterData, registrati
           Event Registration
         </h1>
         <p className="text-slate-500 dark:text-slate-400 max-w-2xl mx-auto text-base">
-          Fill in your details below to register for the Run for India's Glory 2026 – Virtual Challenge. Your participation will be honored with a premium themed acrylic trophy.
+          Fill in your details below to register for the Winter Arc Challenge 2026 – Virtual Challenge. Your participation will be honored with a premium themed acrylic trophy.
         </p>
       </div>
 
