@@ -208,8 +208,8 @@ export default function Event({ registrationOpen = true }) {
   const activeEvent = {
     title: 'Winter Arc Challenge 2026',
     fee: '₹499',
-    timeline: '04 September - 13 September 2026',
-    registrationCloses: '3 september 2026 at 11:59 PM IST',
+    timeline: '2 December - 8 December 2026',
+    registrationCloses: '1 December 2026 at 11:59 PM IST',
     location: 'Run Anywhere (Self-Paced)',
     inclusions: [
       'Premium Theme-Based Acrylic Trophy',
@@ -259,7 +259,7 @@ export default function Event({ registrationOpen = true }) {
         <div className="max-w-5xl mx-auto px-4 py-4 flex flex-wrap justify-center gap-6 sm:gap-10">
           <div className="flex items-center gap-2 text-white/50 text-xs sm:text-sm">
             <Calendar className="h-4 w-4 text-accent-gold" />
-            <span>4 September - 13 September 2026</span>
+            <span>2 December - 8 December 2026</span>
           </div>
           <div className="flex items-center gap-2 text-white/50 text-xs sm:text-sm">
             <MapPin className="h-4 w-4 text-accent-gold" />
@@ -441,7 +441,7 @@ export default function Event({ registrationOpen = true }) {
               <strong className="text-white/60">
                 Timeline:
               </strong>{" "}
-              4 September - 13 September 2026
+              2 December - 8 December 2026
             </span>
 
           </div>
