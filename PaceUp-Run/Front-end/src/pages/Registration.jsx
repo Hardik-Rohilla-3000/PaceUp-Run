@@ -1258,7 +1258,7 @@ export default function Registration({ registerData, setRegisterData, registrati
 
               <div>
                 <label htmlFor="employment_status" className="block text-xs font-bold uppercase tracking-wider text-slate-550 dark:text-slate-400 mb-2">
-                  Employment Status *
+                  Employment Status*
                 </label>
                 <select
                   id="employment_status"
