@@ -33,12 +33,23 @@ Coupon codes are kept out of this repository on purpose. They live only in an Ed
 
 To add, change or stop a coupon, edit the list in that function in the Dashboard and deploy it. No website deploy is needed. Do not commit the `coupon` function to Git.
 
+## PayU webhook (required)
+
+In the PayU dashboard, add a webhook for **successful payments** pointing to:
+
+```
+https://efcqleoqxcscughcnjxw.supabase.co/functions/v1/payu-return?webhook=1
+```
+
+This confirms payments even when the runner closes the tab or never returns from a UPI app.
+
 ## Flow
 
 1. `order` saves a pending registration and returns the signed PayU form fields.
 2. The browser posts those fields to PayU's payment page.
-3. PayU posts the result to `payu-return`, which redirects to `/register?order_id=<txnid>`.
-4. The frontend calls `validate`, which checks the payment with PayU's `verify_payment` API and marks the registration paid.
+3. PayU posts the result to `payu-return` (browser return), and also to `payu-return?webhook=1` (server webhook).
+4. On a successful payment, `payu-return` calls `validate` on the server. `validate` checks the payment with PayU's `verify_payment` API, marks the registration paid and sends the confirmation email once.
+5. The browser is redirected to `/register?order_id=<txnid>`. The page asks `validate` for the result (retrying for about 30 seconds) and shows it. A runner is registered even if this page never finishes loading.
 
 The `cashfree_order_id` column is kept as is and now stores the PayU txnid.
 

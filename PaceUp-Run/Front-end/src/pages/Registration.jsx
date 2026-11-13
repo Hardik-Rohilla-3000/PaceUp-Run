@@ -550,6 +550,11 @@ export default function Registration({ registerData, setRegisterData, registrati
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [paymentFailed, setPaymentFailed]   = useState(false);
   const [paymentDetails, setPaymentDetails] = useState(null);
+  // When verification could not finish: which order, and whether PayU had
+  // already reported "success" (then the runner has paid, don't say otherwise).
+  const [failedOrderId, setFailedOrderId] = useState('');
+  const [paidAtGateway, setPaidAtGateway] = useState(false);
+  const [verifyAttempt, setVerifyAttempt] = useState(0);
   const ticketAutoDownloaded = useRef(false);
   // Server-confirmed coupon: { input, code, discount }. Only counts while the
   // text box still holds the same code that was checked.
@@ -565,35 +570,14 @@ export default function Registration({ registerData, setRegisterData, registrati
   const payableAmount = BASE_PRICE - couponDiscount;
   const displayedAmount = Number(paymentDetails?.amountPaid ?? registerData.amount_paid ?? payableAmount);
 
-  if (!registrationOpen && !isValidating) {
-    return (
-      <div className="min-h-[70vh] flex items-center justify-center px-4">
-        <div className="text-center space-y-4 max-w-md">
-          <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mx-auto">
-            <Lock className="h-8 w-8 text-red-500" />
-          </div>
-          <h1 className="font-display font-black text-2xl sm:text-3xl text-primary-navy dark:text-white">Registrations are Closed</h1>
-          <p className="text-slate-500 dark:text-slate-400 text-sm">Registrations for this event are currently closed. Follow us for updates on upcoming events.</p>
-          <button onClick={() => navigate('/')} className="font-display font-bold uppercase tracking-wider px-8 py-3 rounded-xl bg-accent-gold hover:bg-yellow-400 text-[#040D1D] transition-colors cursor-pointer">
-            Go to Home
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // On mount: check if returning from PayU (via the payu-return function redirect)
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const orderId = params.get('order_id');
-
-    if (!orderId) return;
-
+  // Confirm a returning runner's payment with the server, retrying while PayU
+  // is still settling it. Payment is ALSO confirmed server-side by payu-return
+  // and the PayU webhook, so this page is only for showing the result.
+  const verifyPayment = async (orderId, gatewaySaidSuccess) => {
     // Form data saved before the PayU redirect. It can be missing (different
     // domain, e.g. vercel.app vs www, another browser, cleared storage), so the
-    // server's copy of the registration is used as the fallback. Never wait
-    // on localStorage alone, or the page spins forever.
-    let saved = null;
+    // server's copy of the registration is used as the fallback.
+    let saved;
     try {
       saved = JSON.parse(localStorage.getItem('paceup_register_data') || 'null');
     } catch {
@@ -603,24 +587,30 @@ export default function Registration({ registerData, setRegisterData, registrati
       setRegisterData(saved);
       setDistance(saved.distance);
     }
+
+    setPaymentFailed(false);
     setIsValidating(true);
 
     const API_URL  = import.meta.env.VITE_API_URL;
     const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 45000);
+    // If PayU said success, keep trying for ~30s; otherwise check once.
+    const maxAttempts = gatewaySaidSuccess ? 6 : 1;
 
-    fetch(`${API_URL}/validate`, {
-      method:  'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey':        ANON_KEY,
-        'Authorization': `Bearer ${ANON_KEY}`,
-      },
-      body: JSON.stringify({ order_id: orderId }),
-      signal: controller.signal,
-    })
-      .then(async r => {
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      setVerifyAttempt(attempt);
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 20000);
+      try {
+        const r = await fetch(`${API_URL}/validate`, {
+          method:  'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey':        ANON_KEY,
+            'Authorization': `Bearer ${ANON_KEY}`,
+          },
+          body: JSON.stringify({ order_id: orderId }),
+          signal: controller.signal,
+        });
         const json = await r.json().catch(() => ({}));
         if (r.ok) {
           const reg = json.registration || {};
@@ -645,16 +635,36 @@ export default function Registration({ registerData, setRegisterData, registrati
           setPaymentDetails(json);
           setPaymentSuccess(true);
           localStorage.removeItem('paceup_register_data');
-        } else {
-          setPaymentFailed(true);
+          setIsValidating(false);
+          return;
         }
-        navigate('/register', { replace: true });
-      })
-      .catch(() => setPaymentFailed(true))
-      .finally(() => {
+      } catch {
+        // network error or timeout: retry below
+      } finally {
         clearTimeout(timeout);
-        setIsValidating(false);
-      });
+      }
+      if (attempt < maxAttempts) await new Promise(res => setTimeout(res, 4000));
+    }
+
+    setFailedOrderId(orderId);
+    setPaidAtGateway(gatewaySaidSuccess);
+    setPaymentFailed(true);
+    setIsValidating(false);
+  };
+
+  // On mount: check if returning from PayU (via the payu-return function redirect)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const orderId = params.get('order_id');
+    if (!orderId) return;
+
+    const gatewaySaidSuccess = (params.get('payment_status') || '').toLowerCase() === 'success';
+    // The order_id stays in the URL until the check finishes, so a refresh
+    // mid-check simply checks again instead of showing an empty form.
+    verifyPayment(orderId, gatewaySaidSuccess).finally(() => {
+      navigate('/register', { replace: true });
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -997,14 +1007,72 @@ export default function Registration({ registerData, setRegisterData, registrati
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [paymentSuccess]);
 
+  // Placed after all hooks (a return above them breaks React's hook order).
+  // Never hide a payment result behind "closed".
+  if (!registrationOpen && !isValidating && !paymentSuccess && !paymentFailed) {
+    return (
+      <div className="min-h-[70vh] flex items-center justify-center px-4">
+        <div className="text-center space-y-4 max-w-md">
+          <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mx-auto">
+            <Lock className="h-8 w-8 text-red-500" />
+          </div>
+          <h1 className="font-display font-black text-2xl sm:text-3xl text-primary-navy dark:text-white">Registrations are Closed</h1>
+          <p className="text-slate-500 dark:text-slate-400 text-sm">Registrations for this event are currently closed. Follow us for updates on upcoming events.</p>
+          <button onClick={() => navigate('/')} className="font-display font-bold uppercase tracking-wider px-8 py-3 rounded-xl bg-accent-gold hover:bg-yellow-400 text-[#040D1D] transition-colors cursor-pointer">
+            Go to Home
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (isValidating) {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center gap-6 text-center px-4">
         <Loader2 className="h-14 w-14 animate-spin text-accent-gold" />
         <div className="space-y-2">
-          <p className="font-display font-bold text-xl text-primary-navy dark:text-white">Verifying Payment…</p>
-          <p className="text-slate-400 text-sm">Please wait, do not close this tab.</p>
+          <p className="font-display font-bold text-xl text-primary-navy dark:text-white">Confirming your payment…</p>
+          <p className="text-slate-400 text-sm">
+            {verifyAttempt > 1
+              ? 'PayU is still processing it. This can take up to a minute.'
+              : 'Please wait, do not close this tab or pay again.'}
+          </p>
         </div>
+      </div>
+    );
+  }
+
+  if (paymentFailed && paidAtGateway) {
+    // PayU said "success" but we couldn't confirm yet. The server keeps
+    // confirming in the background (payu-return + webhook), so reassure them.
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-20 text-center space-y-6 animate-fade-in">
+        <div className="flex justify-center">
+          <Loader2 className="h-16 w-16 text-accent-gold animate-spin" style={{ animationDuration: '2.5s' }} />
+        </div>
+        <h1 className="font-display font-black text-3xl sm:text-4xl text-primary-navy dark:text-white">
+          Payment Received – Confirming
+        </h1>
+        <p className="text-slate-500 dark:text-slate-400 text-base">
+          PayU has reported your payment as successful. We're finishing your registration and you'll
+          get a confirmation email within a few minutes. <strong className="text-primary-navy dark:text-white">Please don't pay again.</strong>
+        </p>
+        {failedOrderId && (
+          <p className="text-xs text-slate-400">
+            Order ID: <span className="font-mono text-slate-600 dark:text-slate-300">{failedOrderId}</span>
+          </p>
+        )}
+        <button
+          onClick={() => verifyPayment(failedOrderId, true)}
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-accent-gold text-primary-navy font-bold text-sm hover:opacity-90 transition-opacity shadow-md"
+        >
+          Check Again
+        </button>
+        <p className="text-xs text-slate-400">
+          No email in 15 minutes? Write to{' '}
+          <a href="mailto:paceuprunofficial@gmail.com" className="underline">paceuprunofficial@gmail.com</a>
+          {failedOrderId ? ' with your Order ID.' : '.'}
+        </p>
       </div>
     );
   }
@@ -1019,10 +1087,10 @@ export default function Registration({ registerData, setRegisterData, registrati
           Payment Failed
         </h1>
         <p className="text-slate-500 dark:text-slate-400 text-base">
-          Your payment was not completed or was cancelled. No amount has been deducted.
+          Your payment was not completed or was cancelled.
         </p>
         <button
-          onClick={() => { setPaymentFailed(false); localStorage.removeItem('paceup_register_data'); }}
+          onClick={() => { setPaymentFailed(false); setFailedOrderId(''); setPaidAtGateway(false); localStorage.removeItem('paceup_register_data'); }}
           className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-accent-gold text-primary-navy font-bold text-sm hover:opacity-90 transition-opacity shadow-md"
         >
           Try Again
@@ -1046,7 +1114,7 @@ export default function Registration({ registerData, setRegisterData, registrati
         </h1>
         <p className="text-slate-500 dark:text-slate-400 text-base">
           Thank you, <span className="font-semibold text-primary-navy dark:text-white">{registerData.name}</span>!
-          Your payment was successful and your spot in the Run for India's Glory 2026 is secured.
+          Your payment was successful and your spot in the Winter Arc Challenge 2026 is secured.
         </p>
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-3 text-left shadow-md">
           <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Booking Details</p>

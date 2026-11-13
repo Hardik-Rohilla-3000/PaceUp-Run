@@ -152,7 +152,7 @@ async function sendConfirmationEmail(reg: Record<string, unknown>) {
       <p style="margin: 0 0 24px; color: #22C55E; font-size: 16px; font-weight: 700;">Registration Confirmed ✓</p>
       <p style="margin: 0 0 20px; color: #CBD5E1; font-size: 14px; line-height: 1.6;">
         Hi ${escapeHtml(reg.name) || 'Runner'}, your payment was successful and your spot in the
-        Run for India's Glory 2026 virtual challenge is secured.
+        Winter Arc Challenge 2026 virtual challenge is secured.
       </p>
       <table style="width: 100%; border-collapse: collapse; background: #0B1A35; border-radius: 12px; padding: 16px 20px; display: block; margin-bottom: 24px;">
         <tbody style="display: table; width: 100%;">
