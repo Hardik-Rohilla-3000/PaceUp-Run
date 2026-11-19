@@ -24,12 +24,42 @@ const MAX_ORDERS = 60      // per run
 const CONCURRENCY = 4
 const TIME_BUDGET_MS = 25000
 
+// Supabase Edge Runtime global for background work after the response.
+declare const EdgeRuntime: { waitUntil(promise: Promise<unknown>): void } | undefined
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
+  // Body {"background": true} (used by Supabase Cron, whose HTTP timeout is
+  // only 5s): answer at once and finish the checks in the background.
+  let background = false
+  try {
+    const body = await req.json()
+    background = body?.background === true
+  } catch {
+    // empty / non-JSON body -> normal (wait for the result)
+  }
+
+  if (background && typeof EdgeRuntime !== 'undefined' && EdgeRuntime?.waitUntil) {
+    EdgeRuntime.waitUntil(
+      reconcile()
+        .then((result) => console.log('reconcile-pending (background):', JSON.stringify(result)))
+        .catch((error) => console.error('reconcile-pending (background) failed', error)),
+    )
+    return json({ started: true })
+  }
+
+  try {
+    return json(await reconcile())
+  } catch (error) {
+    return json({ error: error instanceof Error ? error.message : String(error) }, 500)
+  }
+})
+
+async function reconcile() {
   const SUPABASE_URL = Deno.env.get('SUPABASE_URL')
   const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-  if (!SUPABASE_URL || !SERVICE_KEY) return json({ error: 'Server configuration missing' }, 500)
+  if (!SUPABASE_URL || !SERVICE_KEY) throw new Error('Server configuration missing')
 
   const started = Date.now()
   const supabase = createClient(SUPABASE_URL, SERVICE_KEY)
@@ -44,7 +74,7 @@ Deno.serve(async (req) => {
     .order('created_at', { ascending: false })
     .limit(MAX_ORDERS)
 
-  if (error) return json({ error: 'DB lookup failed: ' + error.message }, 500)
+  if (error) throw new Error('DB lookup failed: ' + error.message)
 
   const queue = (pending ?? []).map((row) => String(row.cashfree_order_id))
   let checked = 0
@@ -60,8 +90,8 @@ Deno.serve(async (req) => {
 
   await Promise.all(Array.from({ length: CONCURRENCY }, worker))
 
-  return json({ checked, confirmed, skipped: queue.length })
-})
+  return { checked, confirmed, skipped: queue.length }
+}
 
 // true when validate confirmed the payment (paid), false otherwise. Never throws.
 async function confirm(supabaseUrl: string, serviceKey: string, txnid: string) {
