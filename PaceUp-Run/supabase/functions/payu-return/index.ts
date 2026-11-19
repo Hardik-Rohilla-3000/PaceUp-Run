@@ -86,8 +86,12 @@ Deno.serve(async (req) => {
     // Fall through: an empty txnid sends the runner back to the form.
   }
 
-  // Confirm successful payments on the server before anything else.
-  if (txnid && status.toLowerCase() === 'success') {
+  // Confirm on the server before anything else, whatever status PayU sent.
+  // UPI app payments often come back as "pending" and turn "success" a few
+  // seconds later, so never skip the check based on this status. validate
+  // asks PayU for the real state; for an unpaid order it changes nothing.
+  // (reconcile-pending re-checks anything still pending every 10 minutes.)
+  if (txnid) {
     await confirmOnServer(txnid)
   }
 

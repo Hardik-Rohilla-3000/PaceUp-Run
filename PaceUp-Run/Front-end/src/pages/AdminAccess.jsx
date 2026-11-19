@@ -273,7 +273,10 @@ export default function AdminAccess() {
         setUsers(prev => prev.filter(u => u.id !== deleteTarget.id));
         setDeleteTarget(null);
       } else {
-        alert('Delete failed. Try again.');
+        // The server refuses to delete runners who have paid on PayU.
+        const body = await res.json().catch(() => ({}));
+        alert(body?.error || 'Delete failed. Try again.');
+        setDeleteTarget(null);
       }
     } catch {
       alert('Something went wrong.');
@@ -551,7 +554,7 @@ export default function AdminAccess() {
             title="Draft Payments"
             count={pending.length}
             dotColor="bg-yellow-400"
-            subtitle="Form bhara, payment ka pata nahi - inhe contact karo."
+            subtitle="Checkout dabaya, PayU pe payment pura nahi hua. Ye page khulte hi sab PayU se dobara check hote hain; jinhone pay kiya wo apne aap Paid me chale jaate hain."
           >
             {pending.length === 0
               ? <EmptyState msg="No pending payments." />

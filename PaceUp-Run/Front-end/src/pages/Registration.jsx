@@ -593,7 +593,8 @@ export default function Registration({ registerData, setRegisterData, registrati
 
     const API_URL  = import.meta.env.VITE_API_URL;
     const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-    // If PayU said success, keep trying for ~30s; otherwise check once.
+    // Keep trying for ~30s unless PayU clearly said the payment failed.
+    // ("pending" is common for UPI app payments and turns paid a bit later.)
     const maxAttempts = gatewaySaidSuccess ? 6 : 1;
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -658,7 +659,10 @@ export default function Registration({ registerData, setRegisterData, registrati
     const orderId = params.get('order_id');
     if (!orderId) return;
 
-    const gatewaySaidSuccess = (params.get('payment_status') || '').toLowerCase() === 'success';
+    // Treat anything except an explicit failure as "may be paid": UPI app
+    // payments often return as "pending" and complete seconds later.
+    const gatewayStatus = (params.get('payment_status') || '').toLowerCase();
+    const gatewaySaidSuccess = !['failure', 'failed', 'cancel', 'cancelled', 'usercancelled'].includes(gatewayStatus);
     // The order_id stays in the URL until the check finishes, so a refresh
     // mid-check simply checks again instead of showing an empty form.
     verifyPayment(orderId, gatewaySaidSuccess).finally(() => {
@@ -1051,11 +1055,12 @@ export default function Registration({ registerData, setRegisterData, registrati
           <Loader2 className="h-16 w-16 text-accent-gold animate-spin" style={{ animationDuration: '2.5s' }} />
         </div>
         <h1 className="font-display font-black text-3xl sm:text-4xl text-primary-navy dark:text-white">
-          Payment Received – Confirming
+          Confirming Your Payment
         </h1>
         <p className="text-slate-500 dark:text-slate-400 text-base">
-          PayU has reported your payment as successful. We're finishing your registration and you'll
-          get a confirmation email within a few minutes. <strong className="text-primary-navy dark:text-white">Please don't pay again.</strong>
+          PayU is still confirming your payment. If money was deducted, your registration will be
+          confirmed automatically and you'll get a confirmation email within a few minutes.{' '}
+          <strong className="text-primary-navy dark:text-white">Please don't pay again.</strong>
         </p>
         {failedOrderId && (
           <p className="text-xs text-slate-400">

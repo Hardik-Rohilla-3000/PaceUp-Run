@@ -43,6 +43,16 @@ https://efcqleoqxcscughcnjxw.supabase.co/functions/v1/payu-return?webhook=1
 
 This confirms payments even when the runner closes the tab or never returns from a UPI app.
 
+## Safety net: `reconcile-pending` (required)
+
+Re-checks every pending registration from the last 14 days with PayU and confirms the ones PayU says are paid (marks paid + sends the email once). It never deletes anything.
+
+- Deploy it like the others (JWT verification can stay ON).
+- `admin-data` calls it every time the admin page loads.
+- Schedule it in Supabase: **Integrations → Cron → Create job**, every 10 minutes (`*/10 * * * *`), type **Supabase Edge Function**, function `reconcile-pending`, method POST.
+
+`admin-delete` also refuses to delete a pending registration that PayU says is paid (it gets marked paid instead), or when PayU can't be reached.
+
 ## Flow
 
 1. `order` saves a pending registration and returns the signed PayU form fields.
