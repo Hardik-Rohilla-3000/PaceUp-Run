@@ -9,7 +9,9 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
-    const { email, screenshot_url, km_logged, registration_id } = await req.json()
+    const body = await req.json()
+    const email = String(body?.email ?? '').trim().toLowerCase()
+    const { screenshot_url, km_logged, registration_id } = body ?? {}
     if (!email || !screenshot_url || !km_logged || !registration_id) {
       return json({ error: 'Missing required fields' }, 400)
     }
@@ -20,11 +22,14 @@ Deno.serve(async (req) => {
     )
 
     // Check if already submitted
-    const { data: existing } = await supabase
+    // Case-insensitive exact match, so "A@x.com" and "a@x.com" are one runner.
+    const { data: existingRows } = await supabase
       .from('proof_submissions')
       .select('id')
-      .eq('email', email)
-      .maybeSingle()
+      .ilike('email', exactPattern(email))
+      .order('created_at', { ascending: false })
+      .limit(1)
+    const existing = existingRows?.[0]
 
     if (existing) {
       // Update existing submission
@@ -49,6 +54,11 @@ Deno.serve(async (req) => {
     return json({ error: err.message }, 500)
   }
 })
+
+// Case-insensitive exact match for .ilike(): escape LIKE wildcards (_ is common in emails).
+function exactPattern(email) {
+  return email.replace(/[\\%_]/g, (c) => '\\' + c)
+}
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {

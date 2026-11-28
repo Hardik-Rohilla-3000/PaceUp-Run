@@ -9,7 +9,9 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
-    const { email } = await req.json()
+    const body = await req.json()
+    // Ignore capital letters and stray spaces: "Maira@Gmail.com " == "maira@gmail.com"
+    const email = normalizeEmail(body?.email)
     if (!email) return json({ error: 'email is required' }, 400)
 
     const supabase = createClient(
@@ -17,24 +19,28 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'),
     )
 
-    // Only allow paid registrations to submit proof
-    const { data: registration } = await supabase
+    // Only allow paid registrations to submit proof.
+    // limit(1) instead of maybeSingle(): someone who paid twice with the same
+    // email must still get an OTP (maybeSingle fails when 2 rows match).
+    const { data: registrations } = await supabase
       .from('registrations')
       .select('id')
-      .eq('email', email)
+      .ilike('email', exactPattern(email))
       .eq('payment_status', 'paid')
-      .maybeSingle()
+      .limit(1)
+    const registration = registrations?.[0]
 
     if (!registration) {
       return json({ error: 'No paid registration found for this email. Please register first.' }, 404)
     }
 
     // Check if already submitted proof
-    const { data: existing } = await supabase
+    const { data: existingRows } = await supabase
       .from('proof_submissions')
       .select('id')
-      .eq('email', email)
-      .maybeSingle()
+      .ilike('email', exactPattern(email))
+      .limit(1)
+    const existing = existingRows?.[0]
 
     if (existing) {
       return json({ error: 'You have already submitted your proof. Contact support if you need to update it.' }, 409)
@@ -85,6 +91,16 @@ Deno.serve(async (req) => {
     return json({ error: err.message }, 500)
   }
 })
+
+function normalizeEmail(value) {
+  return String(value ?? '').trim().toLowerCase()
+}
+
+// Case-insensitive exact match for .ilike(): escape the LIKE wildcards
+// (_ is common in emails) so only the exact address matches.
+function exactPattern(email) {
+  return email.replace(/[\\%_]/g, (c) => '\\' + c)
+}
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {

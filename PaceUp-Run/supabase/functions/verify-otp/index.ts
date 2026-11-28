@@ -9,7 +9,10 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
-    const { email, otp } = await req.json()
+    const body = await req.json()
+    // Same normalization as send-otp, which stores the OTP under this key.
+    const email = String(body?.email ?? '').trim().toLowerCase()
+    const otp = String(body?.otp ?? '').trim()
     if (!email || !otp) return json({ error: 'email and otp are required' }, 400)
 
     const supabase = createClient(
@@ -33,21 +36,26 @@ Deno.serve(async (req) => {
     // Delete used OTP
     await supabase.from('otps').delete().eq('email', email)
 
-    const { data: user, error: userErr } = await supabase
+    // Case-insensitive exact match; newest paid registration if there are two.
+    const { data: users, error: userErr } = await supabase
       .from('registrations')
       .select('id, name, email, phone, city, state, distance, address')
-      .eq('email', email)
+      .ilike('email', exactPattern(email))
       .eq('payment_status', 'paid')
-      .maybeSingle()
+      .order('created_at', { ascending: false })
+      .limit(1)
+    const user = users?.[0]
 
     if (userErr || !user) return json({ error: 'Registration not found.' }, 404)
 
     // Check if user already submitted proof
-    const { data: existingProof } = await supabase
+    const { data: proofs } = await supabase
       .from('proof_submissions')
       .select('id, screenshot_url, km_logged, created_at')
-      .eq('email', email)
-      .maybeSingle()
+      .ilike('email', exactPattern(email))
+      .order('created_at', { ascending: false })
+      .limit(1)
+    const existingProof = proofs?.[0]
 
     return json({ user, existingProof: existingProof || null })
   } catch (err) {
@@ -55,6 +63,11 @@ Deno.serve(async (req) => {
     return json({ error: err.message }, 500)
   }
 })
+
+// Case-insensitive exact match for .ilike(): escape LIKE wildcards (_ is common in emails).
+function exactPattern(email) {
+  return email.replace(/[\\%_]/g, (c) => '\\' + c)
+}
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
